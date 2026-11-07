@@ -1,10 +1,6 @@
 # Aryan Verma — Portfolio
 
 <p align="center">
-  <img src="public/media/aryan-portrait.webp" alt="Aryan Verma" width="120" style="border-radius: 50%;" />
-</p>
-
-<p align="center">
   <strong>Data Science & Analysis + UI/UX Design</strong><br>
   <em>Outcome-focused Computer Science undergraduate specializing in Artificial Intelligence & Machine Learning with strong product design expertise.</em>
 </p>
