@@ -65,8 +65,6 @@ Features custom 3D model choreography, generative pixel-art particle engines, co
 ├── package.json             # Dependencies and scripts
 ├── tsconfig.json            # TypeScript configuration
 ├── vercel.json              # Vercel deployment and caching headers
-├── docs/
-│   └── PLAN.md              # Technical design specification & choreography plan
 ├── public/
 │   ├── audio/               # Ambient audio track (Web Audio API)
 │   ├── fonts/               # Web font assets

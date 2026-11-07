@@ -32,4 +32,9 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
-.vercel
+
+# documentation & planning
+docs/
+plan.md
+PLAN.md
+
