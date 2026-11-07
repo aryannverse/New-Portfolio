@@ -1,0 +1,213 @@
+---
+/**
+ * "i" sheet — after string-tune.fiddle.digital's info pop: the page shrinks into a
+ * rounded thumbnail (see .shell rules below) and this sheet animates in over it.
+ * Logic: src/scripts/info.ts
+ */
+import { info, person, music } from "../data/site";
+import Logo from "./Logo.astro";
+import * as si from "simple-icons";
+
+type Icon = { slug: string; path: string };
+const icon = (slug: string) => (Object.values(si as unknown as Record<string, Icon>).find((v) => v && typeof v === "object" && v.slug === slug))?.path ?? "";
+
+// split the about text into words; **…** toggles the highlight (may span words, or stop mid-word before punctuation)
+let inHl = false;
+const words = info.about.split(/\s+/).filter(Boolean).map((word) =>
+  word.split("**").map((seg, k) => { if (k > 0) inHl = !inHl; return { t: seg, hl: inHl }; }).filter((x) => x.t));
+let step = 0;
+---
+<div class="pop" data-pop hidden role="dialog" aria-modal="true" aria-labelledby="pop-title">
+  <div class="pop__veil" data-pop-close-veil></div>
+  <div class="grid pop__w">
+    <a href="/" class="pop__logo t-h3" id="pop-title" data-cursor="cursor-route"><Logo class="pop__av" /><span>{person.name}</span></a>
+    <div class="pop__close">
+      <button type="button" data-pop-close data-cursor="cursor-modal"><span class="t-mm">Close</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <nav class="pop__nav" aria-label="Site">
+      {info.nav.map((n) => {
+        if (n.sep) { return <span class="pop__sep" style={`--t-delay:${step}`}></span>; }
+        const d = step++;
+        if (n.kind === "sheet") return (
+          <div class="pop__b" style={`--t-delay:${d}`}>
+            <button class="pill" type="button" data-pop-open={n.sheet} aria-haspopup="dialog" data-cursor="cursor-view"><span>{n.label}</span></button>
+          </div>
+        );
+        return (
+          <div class="pop__b" style={`--t-delay:${d}`}>
+            <a class={`pill ${n.icon ? "-round" : ""}`} href={n.href} data-cursor={n.kind === "route" ? "cursor-route" : "cursor-newtab"}
+               {...(n.kind === "newtab" && !n.href.startsWith("mailto") ? { target: "_blank", rel: "noopener" } : {})}
+               aria-label={n.icon ? n.label : undefined}>
+              {n.icon ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon(n.icon)} /></svg> : <span>{n.label}{n.kind === "newtab" ? " ↗" : ""}</span>}
+            </a>
+          </div>
+        );
+      })}
+    </nav>
+    <p class="pop__about t-h5"><span class="pop__indent" aria-hidden="true"></span>{words.map((segs) => <span class="pop__w8"><span>{segs.map((x) => x.hl ? <em>{x.t}</em> : x.t)}</span></span>)}</p>
+    <p class="pop__copy t-mm">{info.copy}</p>
+    <!-- Apple Music: glass card that tilts toward the cursor -->
+    <a class="am" href={music.url} target="_blank" rel="noopener" data-am data-cursor="cursor-newtab" aria-label={`${music.name} on Apple Music`}>
+      <span class="am__glare" aria-hidden="true"></span>
+      <span class="am__cover"><img src={music.avatar} alt="" width="600" height="600" loading="lazy" /><span class="am__badge t-mm">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.6 3.3 9.4 5.1a1 1 0 0 0-.8 1v9.2a3 3 0 1 0 1.8 2.7V9.6l6.9-1.5v5.9a3 3 0 1 0 1.8 2.7V4.3a1 1 0 0 0-1.5-1Z" /></svg>Apple Music</span></span>
+      <span class="am__body">
+        <span class="am__name t-h6">{music.name}</span>
+        <span class="am__handle t-mm">{music.handle}</span>
+        <span class="am__k t-mm">Public playlists</span>
+        <span class="am__list">
+          {music.playlists.length
+            ? music.playlists.slice(0, 4).map((pl, k) => <span class="am__pl" data-href={pl.url} role="link" tabindex="0"><i>{String(k + 1).padStart(2, "0")}</i><b>{pl.name}</b>{pl.tracks && <em>{pl.tracks} songs</em>}<span class="am__go">↗</span></span>)
+            : <span class="am__pl -empty"><i>—</i><b>On repeat, coming soon</b></span>}
+        </span>
+        <span class="am__cta pill t-m">Go to profile <span aria-hidden="true">↗</span></span>
+      </span>
+    </a>
+
+    <figure class="pop__avatar" aria-hidden="true">
+      <div class="pop__card"><span class="pop__back"></span><img src="/media/aryan-toon.webp" alt="" width="400" height="600" loading="lazy" /></div>
+      <figcaption class="t-mm">{person.first}</figcaption>
+    </figure>
+  </div>
+</div>
+
+<style is:global>
+  /* ---- the page shell shrinking into a thumbnail ---- */
+  .shell { position: relative; background: var(--c-ink); transform-origin: 50% var(--oy, 50vh); transition: scale .9s var(--e-cubic-in), translate .9s var(--e-cubic-in), clip-path .9s var(--e-cubic-in); }
+  .shell.-clip { clip-path: inset(var(--ct, 0px) 0 var(--cb, 0px) 0 round 0); }
+  html.-pop .shell { scale: .13; translate: 0 calc(var(--vh) * -10); clip-path: inset(var(--ct, 0px) 0 var(--cb, 0px) 0 round 7rem); }
+  html.-pop .shell > main { pointer-events: none; }
+  html.-pop .site-header__nav, html.-pop .site-header__name, html.-pop .site-header__progress { opacity: 0; translate: 0 -1rem; pointer-events: none; }
+  .site-header__nav, .site-header__progress { transition: opacity .6s var(--e-cubic), translate .6s var(--e-cubic); }
+  html.-pop .guide { opacity: 0; pointer-events: none; }
+
+  /* ---- sheet ---- */
+  .pop { position: fixed; inset: 0; z-index: 101; color: var(--c-grey); pointer-events: none; }
+  .pop[hidden] { display: none; }
+  .pop__veil { position: absolute; inset: 0; background: rgba(var(--c-ink-rgb), 0); transition: background-color .9s var(--e-cubic) .15s; pointer-events: auto; }
+  .pop.-on .pop__veil { background: rgba(var(--c-ink-rgb), .8); }
+  .pop__w { position: relative; height: 100%; grid-template-rows: auto auto 1fr auto; padding-top: var(--h4); }
+  .pop__w > * { pointer-events: auto; }
+
+  .pop__logo { --left: 2; --width: 4; grid-row: 1; align-self: start; justify-self: start; color: var(--c-paper); white-space: nowrap; margin-top: calc(var(--h5) * .2); }
+  .pop__logo::after { content: "©"; color: var(--c-accent); font-size: var(--h5); vertical-align: super; line-height: 0; }
+  /* the AV mark leads the name in the sheet (solid accent, ~cap height × 1.4); the faint header copy
+     behind the veil is hidden while a sheet is open */
+  .pop__av { display: inline-block; height: .78em; width: auto; margin-right: .32em; vertical-align: -.02em; color: var(--c-accent); }
+  @media (min-width: 1024px) { html.-pop .site-header__mark { opacity: 0; pointer-events: none; } }
+  .site-header__mark { transition: opacity .5s var(--e-cubic); }
+
+  .pop__close { --left: 9; --width: 4; grid-row: 1; display: flex; justify-content: flex-end; align-self: start; }
+  .pop__close button { position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: space-between; padding: .55rem 0; color: var(--c-paper); }
+  .pop__close button::before { content: ""; position: absolute; inset: 0; border: 1px solid rgba(var(--c-mute-rgb), .6); border-radius: 999px; transition: border-color .3s var(--e-cubic), scale .6s var(--e-cubic), opacity .6s var(--e-cubic); }
+  .pop__close span { margin-left: 1.2rem; color: var(--c-accent); transition: transform .6s var(--e-cubic), translate .3s var(--e-cubic), opacity .3s var(--e-cubic); }
+  .pop__close svg { width: 1.2rem; margin-right: .8rem; fill: none; stroke: var(--c-accent); stroke-width: 2.2; scale: .7; transition: scale .6s var(--e-cubic), rotate .6s var(--e-cubic), translate .6s var(--e-cubic); }
+  .pop__close:hover button::before { border-color: rgba(var(--c-mute-rgb), 1); scale: .98; }
+  .pop__close:hover span { transform: translateX(.4rem); }
+  .pop__close:hover svg { rotate: 180deg; translate: -.3rem 0; }
+
+  .pop__nav { --left: 2; --width: 10; grid-row: 2; display: flex; flex-wrap: wrap; align-items: center; gap: .8rem .4rem; margin-top: 1rem; align-self: start; }
+  .pop__sep { width: 1px; height: 1.6rem; background: rgba(var(--c-mute-rgb), .6); margin: 0 .4rem; }
+  .pop__b .pill svg { width: .9rem; height: .9rem; fill: currentColor; transition: scale .3s var(--e-cubic); }
+  .pop__b .pill:hover svg { scale: 1.2; }
+
+  .pop__about { --left: 2; --width: 7; grid-row: 3; align-self: end; color: var(--c-paper); display: flex; flex-wrap: wrap; column-gap: .26em; }
+  .pop__indent { width: calc((100vw - 2 * var(--margin)) / 14 * 1); }
+  .pop__w8 { display: inline-block; overflow: hidden; padding: .1em 0; margin: -.1em 0; }
+  .pop__w8 > span { display: inline-block; }
+  .pop__w8 em { font-style: normal; color: var(--c-accent); }
+  .pop__copy { --left: 2; --width: 4; grid-row: 4; margin: 1rem 0 var(--h4); color: var(--c-mute); }
+
+  .pop__avatar { --left: 12; --width: 2; grid-row: 3 / span 2; align-self: end; justify-self: center; margin-bottom: var(--h4); display: flex; flex-direction: column; align-items: center; gap: .5rem; perspective: 40rem; }
+  .pop__card { position: relative; width: 4.4rem; aspect-ratio: 2 / 3; transform-style: preserve-3d; }
+  .pop__card img, .pop__back { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: .5rem; backface-visibility: hidden; object-fit: cover; }
+  .pop__card img { box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(var(--c-white-rgb), .2); }
+  .pop__back { transform: rotateY(180deg); background: repeating-linear-gradient(45deg, var(--c-accent) 0 .3rem, #8c231e .3rem .6rem); }
+  .pop__avatar figcaption { color: var(--c-grey); text-transform: uppercase; }
+
+  /* ---- enter / leave (class states mirror Vue's transition classes on the original) ---- */
+  .pop.-enter .pop__logo, .pop.-leave .pop__logo { opacity: 0; translate: calc(var(--h5) * -1) 0; }
+  .pop.-leave .pop__logo { translate: var(--h1) 0; }
+  .pop__logo { transition: translate .9s var(--e-cubic-in), opacity .9s var(--e-cubic-in); }
+  .pop__close button { transition: flex-grow .9s var(--e-fast) .3s; }
+  .pop.-enter .pop__close button, .pop.-leave .pop__close button { flex-grow: .1; }
+  .pop.-enter .pop__close button::before, .pop.-leave .pop__close button::before { opacity: 0; }
+  .pop.-enter .pop__close span, .pop.-leave .pop__close span { opacity: 0; translate: var(--h5) 0; }
+  .pop.-enter .pop__close svg { rotate: 180deg; scale: 1.5; stroke: var(--c-white); }
+  .pop.-leave .pop__close svg { scale: 0; }
+
+  .pop__b, .pop__sep { transition: opacity .6s var(--e-cubic), scale .6s var(--e-cubic), transform .6s var(--e-cubic); transition-delay: calc(var(--t-delay) * .075s + .15s); }
+  .pop.-enter .pop__b, .pop.-enter .pop__sep { opacity: 0; scale: 1 .8; transform: scaleX(.96); }
+  .pop.-leave .pop__b, .pop.-leave .pop__sep { opacity: 0; transition-delay: calc(var(--t-delay) * .045s); }
+
+  .pop__w8 > span { transition: translate .9s var(--e-cubic); transition-delay: calc(var(--li, 0) * .0375s + .3s); }
+  .pop.-enter .pop__w8 > span { translate: 0 150%; }
+  .pop.-leave .pop__w8 > span { translate: 0 150%; transition: translate .7s var(--e-cubic-in); transition-delay: calc(var(--li, 0) * .02s); }
+
+  .pop__copy { transition: opacity .9s var(--e-cubic) .3s, translate .9s var(--e-cubic) .3s; }
+  .pop.-enter .pop__copy, .pop.-leave .pop__copy { opacity: 0; translate: 0 var(--h5); }
+
+  .pop__avatar { transition: scale 1.5s var(--e-cubic), translate 1.5s var(--e-cubic); }
+  .pop__card { transition: transform 1.5s var(--e-cubic); }
+  .pop__avatar figcaption { transition: opacity .6s var(--e-cubic) .9s, translate .6s var(--e-cubic) .9s; }
+  .pop.-enter .pop__avatar { scale: 2; translate: 0 200%; }
+  .pop.-enter .pop__card { transform: rotateX(90deg) rotateY(-180deg); }
+  .pop.-enter .pop__avatar figcaption, .pop.-leave .pop__avatar figcaption { opacity: 0; translate: 0 var(--h5); }
+  .pop.-leave .pop__avatar { translate: 0 200%; transition: scale 1.2s var(--e-cubic-in), translate 1.2s var(--e-cubic-in); }
+  .pop.-leave .pop__card { transform: rotateX(30deg) rotateY(120deg); transition: transform 1.2s var(--e-cubic-in); }
+
+  /* ---- Apple Music card ---- */
+  .am {
+    --left: 10; --width: 3; grid-row: 3; align-self: start; margin-top: 2rem; justify-self: stretch; position: relative; z-index: 1;
+    display: flex; flex-direction: column; border-radius: 1.4rem; overflow: hidden; color: var(--c-paper); isolation: isolate; transform-style: flat;
+    background: rgba(var(--c-white-rgb), .055); backdrop-filter: blur(22px) saturate(170%); -webkit-backdrop-filter: blur(22px) saturate(170%);
+    box-shadow: inset 1px 0 0 rgba(var(--c-white-rgb), .14), inset -1px 0 0 rgba(var(--c-white-rgb), .14), inset 0 1px 0 rgba(var(--c-white-rgb), .28), 0 2rem 4rem rgba(0, 0, 0, .45);
+    transform: perspective(60rem) rotateX(calc(var(--ry, 0) * -8deg)) rotateY(calc(var(--rx, 0) * 10deg));
+    transition: transform .7s var(--e-cubic), box-shadow .5s, opacity .9s var(--e-cubic) .35s, translate 1.2s var(--e-cubic) .35s;
+    max-width: 19rem;
+  }
+  .am:hover { box-shadow: inset 1px 0 0 rgba(var(--c-white-rgb), .2), inset -1px 0 0 rgba(var(--c-white-rgb), .2), inset 0 1px 0 rgba(var(--c-white-rgb), .4), 0 2.6rem 5rem rgba(0, 0, 0, .55); transition-duration: .25s, .5s, .9s, 1.2s; }
+  .am__glare { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; transition: opacity .4s;
+    background: radial-gradient(circle at calc(50% + var(--rx, 0) * 50%) calc(50% + var(--ry, 0) * 50%), rgba(var(--c-white-rgb), .22), rgba(var(--c-white-rgb), 0) 45%); mix-blend-mode: overlay; }
+  .am:hover .am__glare { opacity: 1; }
+  .am__cover { position: relative; display: block; aspect-ratio: 1 / .78; overflow: hidden; border-radius: 1.4rem 1.4rem 0 0; isolation: isolate;
+    -webkit-mask-image: linear-gradient(#000, #000); mask-image: linear-gradient(#000, #000); /* forces the clip to respect the radius under 3D transforms */ }
+  .am__cover img { width: 100%; height: 100%; object-fit: cover; scale: 1.06; translate: calc(var(--rx, 0) * -8px) calc(var(--ry, 0) * -8px); transition: translate .7s var(--e-cubic), scale 1.2s var(--e-cubic); }
+  .am:hover .am__cover img { scale: 1.12; }
+  .am__cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 10, 0) 45%, rgba(10, 10, 10, .65)); }
+  .am__badge { position: absolute; z-index: 1; left: .8rem; top: .8rem; display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .55rem .3rem .45rem; border-radius: 999px; color: var(--c-white);
+    background: rgba(10, 10, 10, .35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .18); }
+  .am__badge svg { width: .8rem; height: .8rem; fill: #fa2d48; }
+  .am__body { display: flex; flex-direction: column; padding: .9rem 1rem 1rem; gap: .15rem; }
+  .am__name { color: var(--c-paper); }
+  .am__handle { color: var(--c-grey); }
+  .am__k { margin-top: .9rem; padding-bottom: .4rem; color: var(--c-mute); text-transform: uppercase; border-bottom: 1px solid rgba(var(--c-white-rgb), .1); }
+  .am__list { display: flex; flex-direction: column; }
+  .am__pl { display: flex; align-items: baseline; gap: .55rem; padding: .45rem 0; font-size: var(--m); border-bottom: 1px solid rgba(var(--c-white-rgb), .07); cursor: pointer; transition: color .3s, padding .4s var(--e-cubic); }
+  .am__pl i { font: var(--mm) / 1 var(--font-mono); font-style: normal; color: var(--c-mute); }
+  .am__pl b { flex: 1; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .am__pl em { font: var(--mm) / 1 var(--font-mono); font-style: normal; color: var(--c-mute); }
+  .am__go { color: var(--c-accent); opacity: 0; translate: -.3rem 0; transition: opacity .3s, translate .4s var(--e-cubic); }
+  .am__pl:hover { color: var(--c-white); padding-left: .2rem; } .am__pl:hover .am__go { opacity: 1; translate: 0 0; }
+  .am__pl.-empty { cursor: default; color: var(--c-grey); } .am__pl.-empty:hover { padding-left: 0; color: var(--c-grey); }
+  .am__cta { align-self: stretch; margin-top: .9rem; height: 2rem; transition: background-color .3s, color .3s; }
+  .am:hover .am__cta { background: var(--c-accent); box-shadow: none; }
+  .pop.-enter .am, .pop.-leave .am { opacity: 0; translate: 0 3rem; }
+  .pop.-leave .am { transition-delay: 0s; transition-duration: .5s; }
+
+  @media (max-width: 1023px) {
+    .am { --left: 0; --width: 6; grid-row: auto; max-width: none; margin: 1.2rem 0; flex-direction: row; }
+    .am__cover { width: 38%; aspect-ratio: auto; flex: none; }
+    .pop__logo { display: none; }
+    .pop__close { --left: 3; --width: 3; }
+    .pop__nav { --left: 0; --width: 6; }
+    .pop__about { --left: 0; --width: 6; font-size: var(--h6); }
+    .pop__indent { width: calc((100vw - 2 * var(--margin)) / 6); }
+    .pop__copy { --left: 0; --width: 4; }
+    .pop__avatar { --left: 4; --width: 2; grid-row: 4; }
+    .pop__card { width: 3.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shell, .pop * { transition-duration: .01ms !important; transition-delay: 0s !important; }
+  }
+</style>

@@ -1,0 +1,226 @@
+---
+/**
+ * /work — project hub. Layout and motion after string-tune.fiddle.digital/skill-hub:
+ * a centred column of cards on a 3D drum (each card tilts/scales by its distance from
+ * the centre line), sticky side readouts for the active card, a springy centre string,
+ * W / S / Enter keys, and a "Change view" catalogue. Logic: src/scripts/hub.ts
+ */
+import Base from "../layouts/Base.astro";
+import Footer from "../components/Footer.astro";
+import BentoArt from "../components/BentoArt.astro";
+import { work, person } from "../data/site";
+
+let n = 0;
+const cats = work.categories.map((c, ci) => ({
+  ...c, ci,
+  items: c.items.map((it) => ({ ...it, n: ++n, id: `w-${ci}-${n}` })),
+}));
+const total = n;
+const pad = (k: number) => String(k).padStart(2, "0");
+let row = 0; // catalogue stagger index
+---
+<Base title={`Work — ${person.name}`} description={`Selected projects by ${person.name}: AI systems, deep learning, data tools, product design and branding.`} home={false}>
+  <section class="hub" id="top" data-hub data-theme="dark" aria-labelledby="hub-title">
+    <div class="grid hub__w">
+      <span class="hub__v t-mm">( {pad(total)} projects · 2025—26 )</span>
+      <h1 class="hub__t t-h2" id="hub-title">
+        <span>{work.title[0]}</span>
+        <span>{work.title[1]}<span class="hub__aside t-m">{work.aside}</span></span>
+      </h1>
+      <button class="hub__view t-m" type="button" data-hub-view aria-pressed="false" data-cursor="cursor-view">Change view</button>
+
+      <!-- drum list -->
+      <div class="hub__list" data-hub-list>
+        {cats.map((c) => (
+          <div class="hub__cat" data-cat={c.name}>
+            {c.items.map((it) => {
+              const Tag = it.href ? "a" : "div";
+              const ext = it.href && /^https?:/.test(it.href);
+              return (
+                <div class="hub__i" id={it.id} data-hub-i data-cat={c.name} data-name={it.title} data-n={pad(it.n)} data-tags={it.tags.join("|")} data-href={it.href ?? ""}>
+                  <Tag class="hub__card" {...(it.href ? { href: it.href, ...(ext ? { target: "_blank", rel: "noopener" } : {}), "data-cursor": "cursor-newtab" } : {})} aria-label={`${it.title}${it.label ? ` — ${it.label}` : ""}`} tabindex="-1">
+                    <div class="hub__media">
+                      {it.image ? (
+                        <span class="hub__shot"><img src={it.image} alt="" width="1400" height="991" loading={it.n < 3 ? "eager" : "lazy"} decoding="async" /></span>
+                      ) : (
+                        <span class={`hub__cover -${it.cover}`}>
+                          <span class="t-mm hub__cover-k">{c.name} / {it.year}</span>
+                          <span class="t-h3 display hub__cover-t">{it.title}</span>
+                          <span class="hub__art"><BentoArt kind={it.cover ?? "match"} dark /></span>
+                        </span>
+                      )}
+                    </div>
+                  </Tag>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      <!-- sticky readouts -->
+      <div class="hub__stick" aria-hidden="true">
+        <div class="hub__gc">
+          <svg class="hub__string" viewBox="0 0 1000 80" preserveAspectRatio="none" data-hub-string><path d="M0 40 Q500 40 1000 40" vector-effect="non-scaling-stroke" /></svg>
+          <span class="hub__lbl hub__lbl--cat t-mm" data-hub-cat>{cats[0].name}</span>
+          <span class="hub__lbl hub__lbl--name t-mm" data-hub-name><i>01.</i>{cats[0].items[0].title} /</span>
+          <span class="hub__lbl hub__lbl--tags t-mm" data-hub-tags>{cats[0].items[0].tags.map((t) => <span>{t}</span>)}</span>
+          <p class="hub__lbl hub__lbl--blurb t-m" data-hub-blurb>{cats[0].items[0].blurb}</p>
+          <div class="hub__keys">
+            <button class="hub__key -w" type="button" data-hub-key="prev" tabindex="-1"><span class="t-mm">W</span></button>
+            <button class="hub__key -s" type="button" data-hub-key="next" tabindex="-1"><span class="t-mm">S</span></button>
+            <button class="hub__key -enter" type="button" data-hub-key="open" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M19 6v5a3 3 0 0 1-3 3H6m0 0 4-4m-4 4 4 4" /></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- catalogue view -->
+      <div class="hub__cata" data-hub-cata hidden>
+        {cats.map((c, ci) => (
+          <div class="hub__cata-g">
+            <span class="hub__cata-c t-mm" style={`--top:${row++}`}>{c.name}</span>
+            {c.items.map((it, k) => (
+              it.href
+                ? <a class="hub__cata-i" href={it.href} target={/^https?:/.test(it.href) ? "_blank" : undefined} rel="noopener" data-label={`${pad(it.n)}.`} style={`--top:${row++}`} data-cursor="cursor-newtab"><span class="t-h6">{it.title}</span><span class="t-mm">{it.tags.slice(0, 2).join(" · ")} — {it.year}</span></a>
+                : <span class="hub__cata-i -soon" data-label={`${pad(it.n)}.`} style={`--top:${row++}`}><span class="t-h6" data-soon={`[${it.soon ?? "soon"}]`}>{it.title}</span><span class="t-mm">{it.tags.slice(0, 2).join(" · ")} — {it.year}</span></span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+  <script type="application/json" id="hub-blurbs" set:html={JSON.stringify(cats.flatMap((c) => c.items.map((i) => i.blurb)))} />
+  <Footer />
+</Base>
+
+<style is:global>
+  /* overflow: clip keeps the sticky readouts inside the section without breaking position: sticky */
+  .hub { position: relative; color: var(--c-grey); overflow: clip; }
+  .hub.-end .hub__lbl, .hub.-end .hub__keys, .hub.-end .hub__string { opacity: 0; translate: 0 1rem; pointer-events: none; }
+  .hub__keys { transition: opacity .6s var(--e-cubic), translate .6s var(--e-cubic); }
+  .hub__w {
+    --colw: calc((100vw - 2 * var(--margin) - (var(--cols) - 1) * var(--gap)) / var(--cols));
+    --listw: calc(var(--colw) * 6 + var(--gap) * 5);
+    --cardh: calc(var(--listw) * .6 + var(--gap) * .5);
+    position: relative; padding-bottom: 0;
+  }
+  .hub__w > * { grid-row: 1; }
+
+  .hub__v { --left: 6; --width: 2; align-self: start; text-align: center; color: var(--c-mute); margin-top: var(--p); position: relative; z-index: 21; }
+  .hub__t { --left: 2; --width: 5; align-self: start; justify-self: start; position: sticky; top: var(--h5); z-index: 20; display: flex; flex-direction: column; line-height: var(--h3-lh, .95); color: var(--c-paper); pointer-events: none; margin-bottom: 12vw; }
+  .hub__t > span { display: flex; }
+  .hub__aside { align-self: flex-start; margin: .35em 0 0 var(--gap); color: var(--c-paper); line-height: 1.1; max-width: 7em; letter-spacing: 0; }
+  .hub__aside::after { content: "⇥"; display: inline-block; font-size: var(--mm); line-height: 0; rotate: 90deg; vertical-align: super; margin-left: .2em; }
+  .hub__view { --left: 10; --width: 2; align-self: start; justify-self: end; position: sticky; top: calc(var(--vh) * 35); z-index: 20; color: var(--c-paper); transition: color .3s; }
+  .hub__view:hover { color: var(--c-accent); }
+
+  /* list */
+  .hub__list { --left: 4; --width: 6; align-self: start; position: relative; margin-top: calc(var(--vh) * 50 - var(--cardh) / 2); margin-bottom: calc(var(--vh) * 50 - var(--cardh) / 2); transition: opacity .6s var(--e-cubic), scale .75s var(--e-cubic); }
+  .hub__list::before, .hub__list::after { content: ""; position: absolute; top: 0; bottom: calc(var(--vh) * -50); width: 1px; background: rgba(var(--c-mute-rgb), .55); }
+  .hub__list::before { left: -.85rem; } .hub__list::after { right: -.85rem; }
+  .hub__cat { display: flex; flex-direction: column; margin: var(--gap) 0; }
+  .hub__i {
+    --progress: 0; --d: max(.5 - var(--progress), var(--progress) - .5);
+    perspective: 40rem; opacity: clamp(0, 1.5 - var(--d) * 5, 1);
+  }
+  .hub__card {
+    display: flex; justify-content: center; align-items: center; padding: calc(var(--gap) / 4) 0; position: relative; pointer-events: none;
+    transform: rotateX(calc(-90deg * (.5 - var(--progress)) * 3.25)) scale(calc(1 - var(--d)));
+  }
+  .hub__i.-active .hub__card { pointer-events: auto; }
+  .hub__media {
+    position: relative; width: 100%; aspect-ratio: 5 / 3; overflow: hidden; border-radius: var(--h4);
+    background: rgb(13, 16, 20); display: grid; place-items: center;
+    box-shadow: -1px 0 0 0 rgba(0,0,0,.2), 1px 0 0 0 rgba(0,0,0,.2), 0 1px 0 0 rgba(var(--c-white-rgb),.2), 0 -1px 0 0 rgba(var(--c-white-rgb),.2), 0 0 0 1px rgba(247,234,237,.125);
+  }
+  .hub__shot { width: 68%; aspect-ratio: 4 / 3; overflow: hidden; translate: 0 calc(-18% + var(--progress) * 36%); border-radius: .3rem; }
+  .hub__shot img { width: 100%; height: 100%; object-fit: cover; transition: scale 1.2s var(--e-cubic); }
+  .hub__card:hover .hub__shot img { scale: 1.05; }
+  .hub__cover { width: 78%; display: flex; flex-direction: column; gap: .6rem; translate: 0 calc(-12% + var(--progress) * 24%); color: var(--c-paper); }
+  .hub__cover-k { color: var(--c-grey); text-transform: uppercase; }
+  .hub__cover-t { line-height: 1; }
+  .hub__art { display: block; height: calc(var(--cardh) * .62); margin: -.4rem -6% 0; }
+  /* only the centred card animates its CSS loops */
+  .hub__i:not(.-active) .bart, .hub__i:not(.-active) .bart * { animation-play-state: paused; }
+
+  /* sticky readouts */
+  .hub__stick { --left: 0; --width: var(--cols); position: sticky; top: 0; height: 0; align-self: start; z-index: 5; pointer-events: none; }
+  .hub__gc { position: relative; height: calc(var(--vh) * 100); }
+  .hub__string { position: absolute; left: 0; width: 100%; top: calc(var(--vh) * 50 - 2.5rem); height: 5rem; overflow: visible; stroke: var(--c-mute); fill: none; stroke-width: 1;
+    -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,.38), #000 50%, rgba(0,0,0,.38)); mask-image: linear-gradient(90deg, rgba(0,0,0,.38), #000 50%, rgba(0,0,0,.38)); }
+  .hub__lbl { position: absolute; top: calc(var(--vh) * 50 + .5rem); text-transform: uppercase; transition: opacity .75s var(--e-cubic), translate .75s var(--e-cubic); }
+  .hub__lbl--cat { left: 0; color: var(--c-grey); }
+  .hub__lbl--name { left: calc((var(--colw) + var(--gap)) * 2); color: var(--c-grey); }
+  .hub__lbl--name i { font-style: normal; color: var(--c-mute); }
+  .hub__lbl--tags { right: 0; display: flex; flex-direction: column; align-items: flex-end; color: var(--c-mute); text-align: right; }
+  .hub__lbl--blurb { right: 0; width: calc(var(--colw) * 3 + var(--gap) * 2); top: auto; bottom: calc(var(--h4) + .6rem); text-transform: none; color: var(--c-grey); text-align: right; }
+  .hub__lbl.-swap { opacity: 0; translate: 0 .4rem; transition-duration: .2s; }
+  .hub__keys { position: absolute; left: 0; bottom: calc(var(--h4) + .6rem); display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: .5rem; pointer-events: auto; }
+  .hub__key {
+    width: 2.8rem; height: 2.8rem; border-radius: .5rem; display: grid; place-items: center; color: var(--c-grey);
+    background: linear-gradient(180deg, #17181b, #101113);
+    box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .1), inset 0 1px 0 rgba(var(--c-white-rgb), .12), 0 .25rem 0 #050506, 0 .25rem 0 1px rgba(var(--c-white-rgb), .06);
+    transition: translate .15s var(--e-cubic), box-shadow .15s var(--e-cubic), color .2s, opacity .6s var(--e-cubic), scale .6s var(--e-cubic);
+    transition-delay: 0s, 0s, 0s, calc(var(--k, 0) * 45ms), calc(var(--k, 0) * 45ms);
+  }
+  .hub__key.-w { grid-area: 1 / 1; --k: 0; } .hub__key.-s { grid-area: 2 / 1; --k: 1; }
+  .hub__key.-enter { grid-area: 1 / 2 / 3 / 3; height: auto; align-items: end; padding-bottom: .8rem; --k: 2; }
+  .hub__key svg { width: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.5; }
+  .hub__key:hover { color: var(--c-paper); }
+  .hub__key.-down { translate: 0 .2rem; color: var(--c-accent); box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .14), inset 0 1px 0 rgba(var(--c-white-rgb), .12), 0 .05rem 0 #050506, 0 .05rem 0 1px rgba(var(--c-white-rgb), .06); }
+
+  /* list ↔ catalogue */
+  .hub.-cata .hub__list { opacity: 0; scale: .88 .84; pointer-events: none; }
+  .hub.-cata-done .hub__list { display: none; }
+  .hub.-cata .hub__lbl, .hub.-cata .hub__string { opacity: 0; translate: 0 var(--h5); }
+  .hub.-cata .hub__key { opacity: 0; scale: .8; pointer-events: none; }
+  .hub__string { transition: clip-path .9s var(--e-cubic), opacity .6s var(--e-cubic); clip-path: inset(0 0 0 0); }
+  .hub.-cata .hub__string { clip-path: inset(0 50% 0 50%); }
+  .hub__cata { --left: 4; --width: 6; align-self: start; margin-top: calc(var(--h1) + var(--h3) * 2 + var(--h3)); position: relative; z-index: 6; }
+  .hub__cata[hidden] { display: none; }
+  .hub__cata-g { margin-bottom: var(--h4); }
+  .hub__cata-c { display: block; border-top: 1px solid var(--c-mute); padding-top: var(--mm); margin-bottom: .4rem; color: var(--c-accent); text-transform: uppercase; }
+  .hub__cata-c::after { content: " ↘"; }
+  .hub__cata-i { position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: var(--mm) 0; box-shadow: inset 0 -1px 0 rgba(var(--c-mute-rgb), .4); color: var(--c-paper); transition: color .3s, padding .4s var(--e-cubic); }
+  .hub__cata-i::before { content: attr(data-label); position: absolute; right: 100%; top: var(--mm); padding-right: var(--gap); color: var(--c-mute); font: var(--mm) / 1 var(--font-mono); }
+  .hub__cata-i .t-mm { color: var(--c-mute); text-transform: uppercase; }
+  a.hub__cata-i:hover { color: var(--c-accent); padding-left: .4rem; }
+  .hub__cata-i.-soon { color: var(--c-mute); }
+  .hub__cata-i.-soon .t-h6::after { content: " " attr(data-soon); color: rgba(var(--c-mute-rgb), .8); font-size: var(--mm); font-family: var(--font-mono); text-transform: uppercase; }
+  .hub__cata-c, .hub__cata-i { transition: opacity .6s var(--e-cubic), transform .6s var(--e-cubic), color .3s, padding .4s var(--e-cubic); transition-delay: calc(var(--top) * .0225s + .3s), calc(var(--top) * .0225s + .3s), 0s, 0s; }
+  .hub__cata.-from .hub__cata-c, .hub__cata.-from .hub__cata-i { opacity: 0; transform: translateY(var(--h6)); transition-delay: calc(var(--top) * .0225s), calc(var(--top) * .0225s), 0s, 0s; }
+
+  /* the list's entry on load (mirrors the -t-list-enter transition) */
+  html:not(.-ready) .hub__list { opacity: 0; scale: .88 .84; }
+  html:not(.-ready) .hub__key { opacity: 0; scale: .8; }
+  html:not(.-ready) .hub__lbl { opacity: 0; translate: 0 var(--h5); }
+  html:not(.-ready) .hub__string { clip-path: inset(0 50% 0 50%); }
+
+  @media (max-width: 1023px) {
+    .hub__v { --left: 3; --width: 3; text-align: right; }
+    .hub__t { --left: 0; --width: 6; position: relative; top: auto; margin-top: calc(var(--h6) + 2.6rem); margin-bottom: 0; }
+    .hub__view { --left: 3; --width: 3; top: calc(var(--vh) * 30); }
+    .hub__list { --left: 0; --width: 6; --listw: calc(100vw - 2 * var(--margin)); }
+    .hub__w { --listw: calc(100vw - 2 * var(--margin)); }
+    .hub__lbl--cat { display: none; }
+    .hub__lbl--name { top: auto; bottom: 1.4rem; left: 0; }
+    .hub__lbl--tags, .hub__lbl--blurb, .hub__keys { display: none; }
+    .hub__cata { --left: 0; --width: 6; margin-top: calc(var(--vh) * 40); padding-left: 1.6rem; }
+    .hub__media { border-radius: var(--h6); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hub__card { transform: none; }
+    .hub__i { opacity: 1; }
+  }
+</style>
+
+<script>
+  import { initHub } from "../scripts/hub";
+  import { initPluck } from "../scripts/pluck";
+  import { initBento } from "../scripts/bento";
+  import { onPage } from "../scripts/life";
+  onPage(() => {
+    const hub = document.querySelector<HTMLElement>("[data-hub]"); if (hub) { initHub(hub); initBento(hub); }
+    const pluck = document.querySelector<SVGSVGElement>("[data-pluck]"); if (pluck) initPluck(pluck);
+  });
+</script>

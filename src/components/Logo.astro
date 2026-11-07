@@ -1,0 +1,9 @@
+---
+/** AV monogram (from AV.svg). Fills with currentColor, so the parent sets the colour. */
+interface Props { class?: string; title?: string }
+const { class: cls = "", title } = Astro.props;
+---
+<svg class={`logo ${cls}`} viewBox="0 0 982 474" fill="currentColor" role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : "true"}>
+  <path d="M893.609 473.704L507.54 0H595.175L913.572 390.806V67.672H778.228V0H981.244V473.704H893.609Z" />
+  <path d="M406.032 82.8982L87.6353 473.704H0L386.069 0H473.704V473.704H406.032V82.8982Z" />
+</svg>

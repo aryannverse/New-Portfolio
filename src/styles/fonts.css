@@ -1,0 +1,18 @@
+@import "@fontsource-variable/inter/opsz.css";
+@import "@fontsource/geist-mono/400.css";
+/* quote serif + Japanese display for the footer name (both SIL Open Font License) */
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/instrument-serif/latin-400-italic.css";
+/* split by unicode-range: the browser only downloads the few slices holding the katakana used */
+@import "@fontsource/zen-kaku-gothic-new/japanese-900.css";
+
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-500.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}

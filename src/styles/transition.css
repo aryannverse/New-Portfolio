@@ -1,0 +1,67 @@
+/**
+ * Page-to-page transition: "the deck".
+ * The current page shrinks into a rounded card (the same gesture as the info sheet),
+ * the card slides away while the next page rises in as a card behind it, then the new
+ * card opens out to full screen. Going back home reverses the direction.
+ *
+ * Chrome/Edge/Safari: native cross-document View Transitions (no JS on the hot path).
+ * Others: src/scripts/transition.ts runs a curtain version of the same idea.
+ */
+
+::view-transition { background: #050505; }
+/* clicks during the 1.5s deck are rescued in scripts/transition.ts (the snapshot layer swallows them) */
+::view-transition-group(root) { animation-duration: 1.5s; }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 1.5s; animation-fill-mode: both; animation-timing-function: linear;
+  mix-blend-mode: normal; transform-origin: 50% 50%; overflow: hidden;
+}
+::view-transition-old(root) { animation-name: pt-old; }
+::view-transition-new(root) { animation-name: pt-new; }
+html[data-pt="back"]::view-transition-old(root) { animation-name: pt-old-back; }
+html[data-pt="back"]::view-transition-new(root) { animation-name: pt-new-back; }
+
+@keyframes pt-old {
+  0%   { transform: none; clip-path: inset(0 round 0); filter: brightness(1); animation-timing-function: cubic-bezier(.69, 0, .2, 1); }
+  38%  { transform: translateY(-3vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.5); animation-timing-function: cubic-bezier(.6, 0, .4, 1); }
+  100% { transform: translateY(-118vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.35); }
+}
+@keyframes pt-new {
+  0%, 34% { transform: translateY(118vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.5); animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  70%  { transform: translateY(0) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.85); animation-timing-function: cubic-bezier(.69, 0, .1, 1); }
+  100% { transform: none; clip-path: inset(0 round 0); filter: brightness(1); }
+}
+@keyframes pt-old-back {
+  0%   { transform: none; clip-path: inset(0 round 0); filter: brightness(1); animation-timing-function: cubic-bezier(.69, 0, .2, 1); }
+  38%  { transform: translateY(3vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.5); animation-timing-function: cubic-bezier(.6, 0, .4, 1); }
+  100% { transform: translateY(118vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.35); }
+}
+@keyframes pt-new-back {
+  0%, 34% { transform: translateY(-118vh) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.5); animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  70%  { transform: translateY(0) scale(.7); clip-path: inset(0 round 2.6rem); filter: brightness(.85); animation-timing-function: cubic-bezier(.69, 0, .1, 1); }
+  100% { transform: none; clip-path: inset(0 round 0); filter: brightness(1); }
+}
+
+/* ---- fallback curtain (no cross-document view transitions) ---- */
+.pt-curtain {
+  position: fixed; inset: 0; z-index: 400; pointer-events: none;
+  display: grid; place-items: center; color: var(--c-grey);
+  background: #050505; border-radius: 2.6rem 2.6rem 0 0;
+  translate: 0 105%;
+}
+.pt-curtain span { opacity: 0; transition: opacity .3s; }
+html.-pt-leave .pt-curtain { animation: pt-cover .75s cubic-bezier(.69, 0, .2, 1) forwards; pointer-events: auto; }
+html.-pt-leave.-pt-back .pt-curtain { animation-name: pt-cover-back; border-radius: 0 0 2.6rem 2.6rem; }
+html.-pt-leave .pt-curtain span { opacity: 1; }
+html.-pt-in .pt-curtain { translate: 0 0; border-radius: 0 0 2.6rem 2.6rem; animation: pt-uncover .9s cubic-bezier(.69, 0, .1, 1) .15s forwards; }
+html.-pt-in.-pt-back .pt-curtain { border-radius: 2.6rem 2.6rem 0 0; animation-name: pt-uncover-back; }
+html.-pt-leave .shell { transition: scale .75s cubic-bezier(.69, 0, .2, 1), filter .75s; scale: .92; filter: brightness(.5); }
+@keyframes pt-cover { from { translate: 0 105%; } to { translate: 0 0; border-radius: 0; } }
+@keyframes pt-cover-back { from { translate: 0 -105%; } to { translate: 0 0; border-radius: 0; } }
+@keyframes pt-uncover { from { translate: 0 0; } to { translate: 0 -105%; } }
+@keyframes pt-uncover-back { from { translate: 0 0; } to { translate: 0 105%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+  .pt-curtain { display: none; }
+}

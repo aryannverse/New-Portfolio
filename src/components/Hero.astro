@@ -1,0 +1,69 @@
+---
+import { person } from "../data/site";
+---
+<section class="hero" id="top" data-verse="hero" string="progress" string-id="hero" string-enter-vp="top" data-theme="dark">
+  <div class="grid hero__w">
+    <span class="hero__v t-mm" string string-id="hero-v">Scroll ↓</span>
+
+    <h2 class="hero__h t-h2 m-h3">
+      <span>Data</span>
+      <span class="hero__inc">meets <em class="t-mm">ml + ui/ux</em></span>
+      <span>design.</span>
+    </h2>
+
+
+    <h1 class="hero__name t-lrg">
+      <span class="sr-only">{person.name} — {person.role}</span>
+      <span class="hero__glass" aria-hidden="true"><span>{person.first}</span><span class="hero__gap">&nbsp;</span><span>{person.last}</span></span>
+    </h1>
+
+    <span class="hero__sub hero__sub--1 t-mm">For data that needs a story<br />and products people enjoy</span>
+    <span class="hero__sub hero__sub--2 t-mm">{person.location}. {person.availability}.</span>
+  </div>
+</section>
+
+<style is:global>
+  .hero { position: relative; z-index: 30; color: var(--c-paper); }
+  .hero__w { min-height: calc(var(--vh) * 100); grid-template-rows: auto 1fr auto auto; }
+  .hero__v { --left: 6; --width: 2; grid-row: 1; align-self: start; text-align: center; color: var(--c-mute); margin-top: var(--p); white-space: nowrap; }
+  .hero__h {
+    --left: 2; --width: 4; grid-row: 1 / span 2; align-self: start;
+    display: flex; flex-direction: column; margin-top: calc(var(--h1) + var(--mm) + 1rem);
+    color: var(--c-paper);
+  }
+  .hero__inc { display: flex; }
+  .hero__inc em { font-style: normal; align-self: flex-start; margin: .5em 0 0 var(--gap); color: var(--c-grey); }
+
+
+  .hero__name { --width: var(--cols); grid-row: 3; align-self: end; display: flex; justify-content: center; position: relative; white-space: nowrap; font-size: min(var(--lrg), 15.4vw); }
+  .hero__name::after { content: "©"; position: absolute; font-family: var(--font); font-size: var(--h3); color: var(--c-mute); right: 0; top: .1em; letter-spacing: 0; }
+  .hero__glass {
+    display: flex; margin-bottom: -.08em;
+    color: transparent;
+    background-image:
+      radial-gradient(closest-side, rgba(var(--c-white-rgb), .95), rgba(var(--c-white-rgb), 0)),
+      linear-gradient(180deg, rgba(var(--c-paper-rgb), .92) 0%, rgba(var(--c-paper-rgb), .55) 55%, rgba(var(--c-paper-rgb), .18) 100%);
+    background-size: 40% 140%, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: calc(-60% + 260% * var(--progress, 0)) 50%, 0 0;
+    -webkit-background-clip: text; background-clip: text;
+    opacity: calc(1 - var(--progress, 0) * 1.4);
+    translate: 0 calc(var(--progress, 0) * -30%);
+    filter: blur(calc(var(--progress, 0) * 12px));
+  }
+  .hero__sub { grid-row: 4; align-self: start; margin-bottom: var(--h3); color: var(--c-paper); }
+  .hero__sub--1 { --left: 0; --width: 4; }
+  .hero__sub--2 { --left: 7; --width: 4; }
+
+  @media (max-width: 1023px) {
+    .hero__gap { display: none; }
+    .hero__v { --left: 2; --width: 2; margin-top: calc(var(--h6) + 2.4rem); }
+    .hero__h { --left: 0; --width: 6; margin-top: 4.6rem; }
+    .hero__sub--1 { --left: 0; --width: 3; }
+    .hero__sub--2 { --left: 3; --width: 3; text-align: right; }
+    .hero__name { font-size: 27vw; line-height: .82; }
+    .hero__glass { flex-direction: column; align-items: flex-start; width: 100%; }
+    .hero__glass > span:last-child { align-self: flex-end; }
+    .hero__name::after { display: none; }
+  }
+</style>

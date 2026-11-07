@@ -1,0 +1,79 @@
+---
+/**
+ * Light chapter after the source's tree/bamboo composition ("Take it… / And listen…"):
+ * a red-crowned generative tree on a cloudy paper sky, warm glows, two blur-wave lines (progress
+ * runs only while the stage is pinned, so both lines play once it has locked; a wave line is fully gone at 2/3 of its range, so
+ * "Let it bloom" (starts .42) only begins once "Plant the seed" (0 → .6, gone by .4) has left),
+ * pixel-art flowers falling from the crown, and the cursor pixel trail over the tree.
+ * Scripts: tree.ts (mode "bloom"), flowers.ts, pixeltrail.ts
+ */
+import { bloom } from "../data/site";
+---
+<section class="bloom on-light" id="bloom" data-theme="light" string="progress" string-id="bloom" string-enter-vp="top" string-exit-vp="bottom" aria-label={bloom.label} data-bloom>
+  <div class="bloom__stage">
+    <div class="bloom__sky" aria-hidden="true"></div>
+    <canvas class="bloom__clouds" data-clouds aria-hidden="true" string="parallax" string-parallax="0.12"></canvas>
+    <canvas class="bloom__fall -far" data-flowers="far" aria-hidden="true"></canvas>
+    <div class="bloom__tree" data-bloom-tree aria-hidden="true"><canvas></canvas></div>
+    <div class="bloom__words t-h2 m-h4 display">
+      <span class="wave" string="split|progress-part" string-split="word|char" string-part-of="bloom[0.00-0.60]">{bloom.words[0]}</span>
+      <span class="wave" string="split|progress-part" string-split="word|char" string-part-of="bloom[0.42-1.00]">{bloom.words[1]}</span>
+    </div>
+    <span class="bloom__line" aria-hidden="true"></span>
+    <p class="bloom__cap t-mm">{bloom.caption[0]}<br />{bloom.caption[1]}</p>
+    <canvas class="bloom__fall -mid" data-flowers="mid" aria-hidden="true"></canvas>
+    <canvas class="bloom__fall -near" data-flowers="near" aria-hidden="true"></canvas>
+  </div>
+</section>
+
+<style is:global>
+  .bloom { position: relative; height: calc(var(--vh) * 240); }
+  .bloom__stage { position: sticky; top: 0; height: calc(var(--vh) * 100); overflow: hidden;
+    /* soft top & bottom so the chapter melts into the sections around it */
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%); }
+  .bloom__sky { position: absolute; inset: 0; background: var(--c-paper); }
+  .bloom__clouds { position: absolute; left: -6vw; top: 4vh; width: 112vw; height: calc(var(--vh) * 100); pointer-events: none; }
+  .bloom__fall { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  /* depth of field: far = soft, mid = crisp, near = out of focus */
+  .bloom__fall.-far { filter: blur(1.4px); opacity: .85; }
+  .bloom__fall.-mid { z-index: 4; }
+  .bloom__fall.-near { z-index: 5; filter: blur(2.6rem); opacity: .9; }
+  .bloom__tree { position: absolute; right: -4vw; bottom: 0; width: 68vw; height: calc(var(--vh) * 100); z-index: 1; }
+  .bloom__tree canvas { width: 100%; height: 100%; display: block; }
+  .bloom__words { position: absolute; z-index: 2; left: calc(var(--margin) + (100vw - 2 * var(--margin)) / 14 * 2); top: calc(var(--vh) * 26); display: flex; flex-direction: column; color: var(--c-ink); }
+  .bloom__words > span:nth-child(2) { margin-left: 1.2em; }
+  .bloom__line { position: absolute; z-index: 2; left: var(--margin); right: var(--margin); top: calc(var(--vh) * 70); height: 1px; background: rgba(var(--c-ink-rgb), .2); }
+  .bloom__cap { position: absolute; z-index: 2; top: calc(var(--vh) * 70 + .9rem); left: calc(var(--margin) + (100vw - 2 * var(--margin)) / 14 * 5); color: var(--c-ink); text-transform: uppercase; }
+  @media (max-width: 1023px) {
+    .bloom { height: calc(var(--vh) * 200); }
+    .bloom__tree { width: 130vw; right: -45vw; height: calc(var(--vh) * 78); }
+    .bloom__words { left: var(--margin); top: calc(var(--vh) * 16); }
+    .bloom__cap { left: var(--margin); }
+    }
+</style>
+
+<script>
+  import { initTree } from "../scripts/tree";
+  import { initFlowers, drawClouds } from "../scripts/flowers";
+  import { pixelTrail } from "../scripts/pixeltrail";
+  import { onPage, raf as pageRaf } from "../scripts/life";
+  onPage(() => {
+
+    const root = document.querySelector<HTMLElement>("[data-bloom]");
+    const treeEl = root?.querySelector<HTMLElement>("[data-bloom-tree]");
+    if (root && treeEl) {
+      const tree = initTree(treeEl, { mode: "bloom" });
+      const clouds = root.querySelector<HTMLCanvasElement>("[data-clouds]"); if (clouds) drawClouds(clouds);
+      const crown = () => treeEl.getBoundingClientRect();
+      root.querySelectorAll<HTMLCanvasElement>("[data-flowers]").forEach((c) => initFlowers(c, crown));
+      // cursor mosaic over the tree, clipped to the tree itself
+      if (tree) {
+        const trail = pixelTrail(tree.canvas, 13);
+        let raf = 0;
+        const loop = () => { raf = pageRaf(loop); trail.draw(); };
+        new IntersectionObserver(([e]) => { cancelAnimationFrame(raf); if (e.isIntersecting) raf = pageRaf(loop); }).observe(root);
+      }
+    }
+  });
+</script>

@@ -1,0 +1,75 @@
+---
+import { experience } from "../data/site";
+import Logo from "./Logo.astro";
+---
+<section class="exp on-light" id="experience" data-theme="light" data-exp aria-labelledby="exp-title">
+  <div class="exp__sticky">
+    <div class="grid exp__w">
+      <h2 id="exp-title" class="t-h2 m-h3 display exp__t">{experience.title.map((w) => <span>{w}</span>)}</h2>
+      <span class="t-mm exp__side">{experience.side}</span>
+      <div class="exp__words t-h0 m-h2 display" aria-hidden="true">
+        <span class="exp__glyph" data-exp-glyph><i>(</i><Logo class="exp__sig" /><i>)</i></span>
+        {experience.roles.map((r) => <span class="swap" string="split" string-split="char">{r.word}</span>)}
+      </div>
+      <ol class="exp__steps">
+        {experience.roles.map((r, i) => (
+          <li class="exp__step">
+            <span class="t-mm exp__n">({i + 1})</span>
+            <h3 class="t-m exp__role"><b>{r.company}</b><br />{r.role} <span class="t-mm">{r.dates}</span></h3>
+            <p class="t-m exp__text" string="split" string-split="word">{r.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <div class="exp__cover" aria-hidden="true"></div>
+  </div>
+</section>
+
+<style is:global>
+  .exp { position: relative; height: calc(var(--vh) * 650); }
+  .exp__sticky { position: sticky; top: 0; height: calc(var(--vh) * 100); overflow: hidden; }
+  .exp__w { height: 100%; grid-template-rows: auto 1fr auto; padding-top: calc(var(--h4) + 2.4rem); padding-bottom: 2.4rem; }
+  .exp__t { --left: 1; --width: 4; grid-row: 1; display: flex; flex-direction: column; }
+  .exp__side { --left: 7; --width: 2; grid-row: 1; align-self: center; color: var(--c-grey); }
+  .exp__words { grid-row: 2; display: grid; place-items: center; }
+  .exp__words > span { grid-area: 1 / 1; white-space: nowrap; flex-wrap: nowrap; }
+  .swap .-s-char {
+    --e: clamp(0, var(--in, 0) * 1.6 - var(--char-index) / var(--char-global-total, 1) * .6, 1);
+    --x: clamp(0, var(--out, 0) * 1.6 - var(--char-index) / var(--char-global-total, 1) * .6, 1);
+    --v: calc(var(--e) - var(--x));
+    opacity: var(--v);
+    filter: blur(calc((1 - var(--v)) * .18em));
+    scale: calc(1.6 - var(--v) * .6);
+  }
+  .exp__steps { --left: 1; --width: 12; grid-row: 3; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap) 1.6rem; }
+  .exp__n { display: block; margin-bottom: .8rem; color: var(--c-soft); transition: color .8s var(--e-smooth); }
+  .exp__role { margin-bottom: .6rem; color: var(--c-soft); transition: color .8s var(--e-smooth); }
+  .exp__role .t-mm { color: var(--c-soft); display: block; margin-top: .2rem; transition: color .8s var(--e-smooth); }
+  .exp__step.-on .exp__n, .exp__step.-on .exp__role { color: var(--c-ink); }
+  .exp__step.-on .exp__role .t-mm { color: var(--c-grey); }
+  /* words fade from faint to ink, softly and continuously (--f is 0..1 per word) */
+  .exp__text .-s-word { --f: 0; color: color-mix(in srgb, var(--c-ink) calc(var(--f) * 100%), var(--c-soft)); white-space: pre; transition: color .6s var(--e-smooth); }
+  /* the resting glyph: ( signature ) — blurs away as the first company word arrives */
+  .exp__glyph { --g: 1; grid-area: 1 / 1; display: flex; align-items: center; gap: .5em; color: var(--c-ink);
+    opacity: var(--g); filter: blur(calc((1 - var(--g)) * .25em)); scale: calc(1.25 - var(--g) * .25); }
+  .exp__glyph i { font-style: normal; font-family: var(--font); font-weight: 200; font-size: .9em; line-height: 1; translate: 0 -.04em; }
+  .exp__glyph .exp__sig { height: .82em; width: auto; color: var(--c-ink); }
+  .exp__text.-splitted { flex-wrap: wrap; }
+  .exp__cover {
+    --c: 0;
+    position: absolute; inset: 0; background: var(--c-ink);
+    clip-path: ellipse(calc(18% + var(--c) * 95%) calc(var(--c) * 140%) at 50% 100%);
+    pointer-events: none;
+  }
+  @media (max-width: 1023px) {
+    .exp__t { --left: 0; --width: 6; }
+    .exp__side { display: none; }
+    .exp__words { font-size: min(var(--h1), 17vw); }
+    .exp__steps { --left: 0; --width: 6; grid-template-columns: 1fr 1fr; row-gap: 1.2rem; }
+    .exp__text { font-size: var(--mm); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .swap .-s-char { filter: none; scale: 1; }
+    .exp__glyph { filter: none; }
+  }
+</style>

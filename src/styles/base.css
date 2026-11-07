@@ -1,0 +1,147 @@
+@import "./fonts.css";
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  line-height: var(--lh);
+  font-family: var(--font);
+  background: var(--c-ink);
+  color: var(--c-white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+}
+@media (min-width: 1024px) { html { font-size: 20px; } }
+@media (min-width: 1600px) { html { font-size: 22px; } }
+@media (min-width: 1920px) { html { font-size: 24px; } }
+@media (min-width: 2560px) { html { font-size: 28px; } }
+
+body { overflow-x: clip; }
+img, video, canvas, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+ul, ol { list-style: none; }
+
+::selection { background: var(--c-accent); color: var(--c-white); }
+
+:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; border-radius: 4px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- grid ----------
+   children opt in with --left (0-based col), --width (cols), --top (row) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--gap);
+  padding-inline: var(--margin);
+  width: 100%;
+}
+.grid > * {
+  --left: 0; --width: var(--cols);
+  grid-column: calc(var(--left) + 1) / span var(--width);
+}
+.grid > [style*="--top"], .grid > .row { grid-row: var(--top) / span 1; }
+
+/* ---------- type ---------- */
+.t-lrg { font-size: var(--lrg); line-height: var(--lrg-lh); letter-spacing: -0.06em; font-weight: 400; }
+.t-h0 { font-size: var(--h0); line-height: var(--h1-lh); letter-spacing: -0.03em; }
+.t-h1 { font-size: var(--h1); line-height: var(--h1-lh); letter-spacing: -0.03em; }
+.t-h2 { font-size: var(--h2); line-height: var(--h1-lh); letter-spacing: -0.02em; }
+.t-h3 { font-size: var(--h3); line-height: var(--h1-lh); letter-spacing: -0.02em; }
+.t-h4 { font-size: var(--h4); line-height: var(--h4-lh); letter-spacing: -0.02em; }
+.t-h5 { font-size: var(--h5); line-height: var(--h5-lh); letter-spacing: -0.02em; }
+.t-h6 { font-size: var(--h6); line-height: var(--h6-lh); letter-spacing: -0.02em; }
+.t-p  { font-size: var(--p); line-height: var(--lh); }
+.t-m  { font-size: var(--m); line-height: var(--lh); }
+.t-mm { font-family: var(--font-mono); font-size: var(--mm); line-height: var(--lh); text-transform: uppercase; letter-spacing: 0.02em; }
+.t-center { text-align: center; }
+
+@media (max-width: 1023px) {
+  .m-h1 { font-size: var(--h1); line-height: var(--h1-lh); }
+  .m-h3 { font-size: var(--h3); line-height: var(--h1-lh); }
+  .m-h4 { font-size: var(--h4); line-height: var(--h4-lh); }
+  .m-h5 { font-size: var(--h5); line-height: var(--h5-lh); }
+}
+
+/* ---------- split text (StringSplit output) ---------- */
+.-splitted { display: flex; flex-wrap: wrap; }
+.-splitted .-s-line { display: flex; }
+.-splitted .-s-word, .-splitted .-s-char { display: inline-flex; }
+.t-center .-splitted, .t-center.-splitted,
+.t-center .-splitted .-s-line, .t-center.-splitted .-s-line { justify-content: center; }
+
+/* Scroll-driven blur wave: each char fades in (blur→sharp, 2x→1x scale)
+   and back out as its stage's --progress-slice runs 0→1. */
+.wave .-s-char {
+  --local: calc((var(--progress-slice, 0) - var(--char-index) / (var(--char-global-total, 1) * 3) * 0.5) / 0.5);
+  --wave: min(var(--local) * 3, (1 - var(--local)) * 3);
+  opacity: clamp(0, var(--wave), 1);
+  filter: blur(clamp(0px, (1 - var(--wave)) * 0.15em, 0.5em));
+  scale: calc(2 - clamp(0, var(--wave), 1));
+  transform: translateZ(0);
+}
+/* Each blurred char gets its own compositing layer, clipped to the char's box; with the tight
+   display line-height that box ends above descenders (g, p, y) and below accents. Pad the box
+   (and cancel the padding with a negative margin) so the layer holds the whole glyph. */
+.wave .-s-char, .wave-in .-s-char { padding-block: .22em; margin-block: -.22em; }
+/* Same wave, entry only (stays visible once in) */
+.wave-in .-s-char {
+  --local: calc((var(--progress-slice, 0) - var(--char-index) / (var(--char-global-total, 1) * 3) * 0.5) / 0.5);
+  --wave: clamp(0, var(--local) * 2, 1);
+  opacity: var(--wave);
+  filter: blur(calc((1 - var(--wave)) * 0.15em));
+  scale: calc(2 - var(--wave));
+}
+
+/* ---------- glass pill button ---------- */
+.pill {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: .4em;
+  height: 1.6rem; padding: 0 .75rem;
+  border-radius: 999px;
+  font-size: var(--p); line-height: 1;
+  white-space: nowrap;
+  color: var(--c-white);
+  background: rgba(var(--c-white-rgb), .06);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  box-shadow:
+    inset 1px 0 0 rgba(var(--c-white-rgb), .18), inset -1px 0 0 rgba(var(--c-white-rgb), .18),
+    inset 0 1px 0 rgba(var(--c-white-rgb), .35), inset 0 -1px 0 rgba(var(--c-white-rgb), .08),
+    0 .4rem 1.2rem rgba(0, 0, 0, .12);
+  transition: background-color .4s var(--e-cubic), scale .4s var(--e-bounce), color .3s;
+}
+.pill:hover { background: rgba(var(--c-white-rgb), .16); }
+.pill:active { scale: .96; }
+.pill.-round { width: 1.6rem; padding: 0; font-family: var(--font-mono); font-size: var(--mm); }
+.on-light .pill, .pill.-dark {
+  color: var(--c-ink);
+  background: rgba(var(--c-white-rgb), .55);
+  box-shadow:
+    inset 1px 0 0 rgba(var(--c-ink-rgb), .12), inset -1px 0 0 rgba(var(--c-ink-rgb), .12),
+    inset 0 1px 0 rgba(var(--c-white-rgb), .9), 0 .4rem 1.2rem rgba(var(--c-ink-rgb), .06);
+}
+.on-light .pill:hover { background: rgba(var(--c-white-rgb), .9); }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .wave .-s-char, .wave-in .-s-char { opacity: 1 !important; filter: none !important; scale: 1 !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* display face for the big type */
+.t-lrg, .t-h0, .t-h1, .t-h2, .display { font-family: var(--font-display); font-weight: 500; }
+.t-lrg { letter-spacing: -0.045em; }
+
+/* light chapters */
+.on-light { color: var(--c-ink); }
+
+/* ---------- reveal on view (StringTune adds .-inview) ---------- */
+.rise { opacity: 0; translate: 0 1.2rem; transition: opacity .9s var(--e-cubic), translate .9s var(--e-cubic); transition-delay: var(--d, 0s); }
+.rise.-inview, .-inview .rise { opacity: 1; translate: 0 0; }

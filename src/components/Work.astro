@@ -1,0 +1,186 @@
+---
+import { stats, awards, experience, person, work, captures } from "../data/site";
+import BentoArt from "./BentoArt.astro";
+// the latest builds, pulled from the /work list
+const all = work.categories.flatMap((c) => c.items.map((it) => ({ ...it, cat: c.name })));
+const pick = (t: string) => all.find((x) => x.title === t)!;
+const tiles = [
+  { p: pick("Veritas"), cls: "w-miraki", art: "rag" },
+  { p: pick("LLMOps Guardrails"), cls: "w-leuk", art: "guard" },
+  { p: pick("SLM Clinical Safety"), cls: "w-genesis", art: "quant" },
+  { p: pick("GitLab MCP Server"), cls: "w-hs3", art: "mcp" },
+  { p: pick("Neural Vol Surface"), cls: "w-bsm", art: "surface" },
+];
+const total = all.length;
+const now = experience.roles[0];
+---
+<section class="work on-light" id="work" data-theme="light" aria-labelledby="work-title">
+  <div class="grid work__head">
+    <span class="t-mm work__k">(05) Selected work</span>
+    <h2 id="work-title" class="t-h3 m-h4 display work__t rise" string>Built, trained, shipped.</h2>
+    <a class="t-mm work__r" href="/work" data-cursor="cursor-route">All {total} projects →</a>
+  </div>
+
+  <div class="grid work__grid" string string-repeat>
+    {tiles.map(({ p, cls, art }, i) => (
+      <a class={`work__item work__proj ${cls}`} style={`--i:${i}`} href={p.href ?? "/work"}
+         target={p.href ? "_blank" : undefined} rel={p.href ? "noopener" : undefined}
+         data-cursor="cursor-view">
+        <span class="work__art" aria-hidden="true"><BentoArt kind={art} /></span>
+        <span class="work__meta">
+          <span class="t-mm">{p.cat} · {p.year}</span>
+          <span class="t-h6 work__name">{p.title}</span>
+          <span class="t-m work__sum">{p.blurb}</span>
+        </span>
+        {p.href && <span class="pill work__go t-m">{p.label ?? "GitHub"} ↗</span>}
+      </a>
+    ))}
+
+    <div class="work__item work__stat w-s1" style="--i:5">
+      <span class="t-mm">{stats[0].label}</span>
+      <span class="t-h1 display">{stats[0].value}</span>
+    </div>
+    <div class="work__item work__stat -white w-s2 work__gauge" style="--i:6" data-gauge>
+      <span class="t-mm">Root-cause time · Ericsson</span>
+      <div class="work__gauge-row">
+        <svg class="work__dial" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="trk" cx="60" cy="60" r="48" pathLength="100" />
+          <circle class="arc" cx="60" cy="60" r="48" pathLength="100" />
+          {Array.from({ length: 12 }, (_, k) => <path class="tk" d="M60 6V12" transform={`rotate(${k * 30} 60 60)`} />)}
+          <path class="hand" d="M60 60V22" />
+        </svg>
+        <span class="work__gauge-n"><b class="t-h2 display" data-count>50</b><span class="t-mm">min</span></span>
+      </div>
+      <span class="t-mm work__gauge-f"><s>50 min</s> → <b>18 min</b> · −64%</span>
+    </div>
+    <div class="work__item work__now -white w-now" style="--i:7">
+      <span class="t-mm"><i class="work__dot" aria-hidden="true"></i> Currently</span>
+      <span class="t-h6">{now.role}<br /><span class="work__muted work__co">@ {now.company}</span></span>
+      <span class="t-m work__muted">{now.text}</span>
+    </div>
+    <div class="work__item work__award w-award" style="--i:8">
+      <span class="t-mm">Awards</span>
+      <div class="work__ticker t-m"><ul>
+        {[...awards, ...awards].map((a) => <li><b>{a.title}</b> <span>{a.issuer} · {a.year}</span></li>)}
+      </ul></div>
+    </div>
+    <button class="work__item work__photo w-photo" style="--i:9" type="button" data-pop-open="gallery" data-cursor="cursor-view" aria-haspopup="dialog">
+      <span class="work__slides" aria-hidden="true">{["jaipur-rooftops", "fort-and-hills", "eye-macro", "rooftop-above-the-city"].map((n, k) => <img src={`/media/gallery/${n}.webp`} alt="" loading="lazy" style={`--k:${k}`} />)}</span>
+      <span class="work__photo-t"><span class="t-mm">{String(captures.photos.length).padStart(2, "0")} frames</span><span class="t-h6">My captures</span></span>
+    </button>
+    <a class="work__item work__mail -white w-mail" style="--i:10" href={`mailto:${person.email}`} data-cursor="cursor-newtab">
+      <span class="t-mm">Have a project?</span>
+      <span class="t-h5 m-h6">Let’s make it <em>outcome-focused.</em></span>
+      <span class="t-m work__muted">{person.email}</span>
+    </a>
+  </div>
+</section>
+
+<style is:global>
+  .work { position: relative; padding: 4rem 0 6rem; }
+  .work__head { align-items: end; margin-bottom: 1.6rem; }
+  .work__k { --left: 0; --width: 3; color: var(--c-grey); }
+  .work__t { --left: 3; --width: 8; text-align: center; }
+  .work__r { --left: 11; --width: 3; text-align: right; color: var(--c-grey); }
+
+  .work__grid { grid-auto-rows: 11.2rem; grid-auto-flow: dense; row-gap: var(--gap); }
+  .work__item {
+    position: relative; overflow: hidden; border-radius: 1.8rem;
+    background: rgba(var(--c-white-rgb), .45);
+    box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .7), 0 1rem 2rem rgba(var(--c-ink-rgb), .03);
+    padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;
+    opacity: 0; translate: 0 2rem; scale: .97;
+    transition: opacity .9s var(--e-cubic), translate .9s var(--e-cubic), scale .9s var(--e-cubic), box-shadow .4s;
+    transition-delay: calc(var(--i) * .05s);
+  }
+  .work__grid.-inview .work__item { opacity: 1; translate: 0 0; scale: 1; }
+  .work__item.-white { background: var(--c-white); }
+  .work__item .t-mm { color: var(--c-grey); }
+  .work__muted { color: var(--c-grey); }
+
+  .w-miraki { --left: 0; --width: 6; grid-row: span 2; }
+  .w-s1 { --left: 6; --width: 3; }
+  .w-leuk { --left: 9; --width: 5; grid-row: span 2; }
+  .w-s2 { --left: 6; --width: 3; }
+  .w-genesis { --left: 0; --width: 5; grid-row: span 2; }
+  .w-now { --left: 5; --width: 4; }
+  .w-hs3 { --left: 9; --width: 5; grid-row: span 2; }
+  .w-award { --left: 5; --width: 4; }
+  .w-bsm { --left: 0; --width: 7; grid-row: span 2; }
+  .w-photo { --left: 7; --width: 3; grid-row: span 2; }
+  .w-mail { --left: 10; --width: 4; grid-row: span 2; }
+
+  .work__proj { padding: 0; color: var(--c-white); background: var(--c-ink); }
+  .work__proj.work__proj { color: var(--c-ink); background: linear-gradient(180deg, rgba(var(--c-white-rgb), .75), rgba(var(--c-white-rgb), .45)); box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .9), 0 1rem 2rem rgba(var(--c-ink-rgb), .04); }
+  .work__proj::after { display: none; }
+  .work__art { position: absolute; inset: 6% 6% 30%; display: grid; place-items: center; transition: scale 1.4s var(--e-cubic); }
+  .work__proj:hover .work__art { scale: 1.03; }
+  .work__proj:hover { box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), 1), 0 1.6rem 3rem rgba(var(--c-ink-rgb), .08); }
+  .work__proj::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,.78)); }
+
+  .work__meta { position: absolute; inset: auto 0 0 0; padding: 1.2rem; z-index: 2; display: flex; flex-direction: column; gap: .3rem; }
+  .work__proj .t-mm { color: var(--c-grey); }
+  .work__sum { max-width: 30em; color: var(--c-grey); max-height: 0; opacity: 0; overflow: hidden; transition: max-height .6s var(--e-cubic), opacity .5s; }
+  .work__proj:hover .work__sum, .work__proj:focus-visible .work__sum { max-height: 6em; opacity: 1; }
+  .work__go { position: absolute; top: 1rem; right: 1rem; z-index: 2; height: 1.4rem; opacity: 0; translate: 0 -.4rem; transition: opacity .4s, translate .5s var(--e-cubic); }
+  .work__proj:hover .work__go { opacity: 1; translate: 0 0; }
+
+  .work__stat .t-h1 small { font-size: .45em; }
+  .work__bars { position: absolute; right: 1rem; top: 1rem; display: flex; gap: 3px; align-items: flex-end; height: 3rem; }
+  .work__bars i { width: 6px; height: calc((var(--v) - .85) * 650%); background: var(--c-accent); border-radius: 2px; }
+  .work__dot { display: inline-block; width: .45rem; height: .45rem; border-radius: 50%; background: #2ecc71; margin-right: .3rem; box-shadow: 0 0 0 0 rgba(46, 204, 113, .6); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 .5rem rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
+  .work__ticker { height: 4.6rem; overflow: hidden; mask-image: linear-gradient(180deg, transparent, #000 22% 78%, transparent); }
+  .work__ticker ul { animation: ticker 26s linear infinite; }
+  .work__ticker:hover ul { animation-play-state: paused; }
+  .work__ticker li { padding-bottom: .6rem; }
+  .work__ticker span { color: var(--c-grey); display: block; font-size: var(--mm); }
+  @keyframes ticker { to { translate: 0 -50%; } }
+  .work__photo { padding: 0; justify-content: flex-end; color: var(--c-white); }
+  .work__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: scale 1.4s var(--e-cubic); }
+  .work__photo:hover img { scale: 1.08; }
+  .work__photo { border: 0; font: inherit; text-align: left; cursor: pointer; }
+  .work__co { transition: color .45s var(--e-cubic); }
+  .w-now:hover .work__co { color: var(--c-accent); }
+  .work__gauge-row { display: flex; align-items: center; gap: .9rem; }
+  .work__dial { width: 4.6rem; height: 4.6rem; flex: none; }
+  .work__dial .trk { fill: none; stroke: rgba(var(--c-ink-rgb), .1); stroke-width: 8; }
+  .work__dial .arc { fill: none; stroke: var(--c-accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--v, 100)); transform: rotate(-90deg); transform-origin: 60px 60px; }
+  .work__dial .tk { stroke: rgba(var(--c-ink-rgb), .25); stroke-width: 1.4; }
+  .work__dial .hand { stroke: var(--c-ink); stroke-width: 2.4; stroke-linecap: round; transform-origin: 60px 60px; rotate: calc(var(--v, 100) * 3.6deg); }
+  .work__gauge-n { display: flex; align-items: baseline; gap: .3rem; }
+  .work__gauge-n b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .work__gauge-f s { color: var(--c-soft); } .work__gauge-f b { color: var(--c-accent); font-weight: 500; }
+  .work__slides { position: absolute; inset: 0; }
+  .work__slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: wslide 16s infinite; animation-delay: calc(var(--k) * 4s); }
+  @keyframes wslide { 0% { opacity: 0; scale: 1.08; } 6%, 25% { opacity: 1; } 31%, 100% { opacity: 0; scale: 1; } }
+  .work__photo:hover .work__slides { scale: 1.04; transition: scale 1.2s var(--e-cubic); }
+  .work__photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.6)); }
+  .work__photo-t { position: relative; z-index: 1; padding: 1.2rem; display: flex; flex-direction: column; gap: .2rem; }
+  .work__photo-t .t-mm { color: rgba(var(--c-white-rgb), .75); }
+  .work__r { transition: color .3s; } .work__r:hover { color: var(--c-accent); }
+  .work__mail em { font-style: normal; color: var(--c-accent); }
+  .work__mail { transition: background-color .4s, opacity .9s var(--e-cubic), translate .9s var(--e-cubic), scale .9s var(--e-cubic); }
+  .work__mail:hover { background: var(--c-ink); color: var(--c-white); }
+
+  @media (max-width: 1023px) {
+    .work__k, .work__r { display: none; }
+    .work__t { --left: 0; --width: 6; text-align: left; }
+    .work__grid { grid-auto-rows: 9rem; }
+    .w-miraki, .w-leuk, .w-genesis, .w-hs3, .w-bsm { --left: 0; --width: 6; grid-row: span 2; }
+    .w-s1, .w-s2 { --width: 3; }
+    .w-s1 { --left: 0; } .w-s2 { --left: 3; }
+    .w-now, .w-award { --left: 0; --width: 6; }
+    .w-photo { --left: 0; --width: 3; } .w-mail { --left: 3; --width: 3; }
+    .work__sum { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .work__ticker ul { animation: none; } }
+</style>
+
+<script>
+  import { initBento } from "../scripts/bento";
+  import { onPage } from "../scripts/life";
+  onPage(() => {
+    const w = document.querySelector<HTMLElement>("#work .work__grid"); if (w) initBento(w);
+  });
+</script>

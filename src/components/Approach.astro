@@ -1,0 +1,174 @@
+---
+import { approach } from "../data/site";
+import * as si from "simple-icons";
+
+type Icon = { title: string; hex: string; path: string };
+const bySlug = new Map<string, Icon>(Object.values(si as unknown as Record<string, Icon & { slug: string }>).filter((v) => v && typeof v === "object" && "slug" in v).map((v) => [v.slug, v]));
+const groups = approach.groups.map((g) => ({
+  title: g.title,
+  tools: g.tools.map((t) => {
+    const ic = bySlug.get(t.icon);
+    if (!ic) throw new Error(`simple-icons: unknown slug "${t.icon}"`);
+    return { name: t.name ?? ic.title, hex: ic.hex, path: ic.path };
+  }),
+}));
+---
+<section class="approach on-light" id="toolkit" data-theme="light" string="progress" string-id="approach" aria-labelledby="approach-title">
+  <div class="grid approach__intro">
+    <p class="approach__kicker t-h4 m-h5 t-center rise" string>
+      {approach.kicker[0]}<br /><span>{approach.kicker[1]}</span>
+    </p>
+    <div class="approach__emblem" aria-hidden="true">
+      <span class="t-mm approach__n">N</span>
+      <span class="t-mm approach__cp approach__cp--e">E</span>
+      <span class="t-mm approach__cp approach__cp--w">W</span>
+      <span class="t-mm approach__lbl approach__lbl--r">Pattern<br />recognition</span>
+      <span class="t-mm approach__lbl approach__lbl--l">Human<br />centred</span>
+      <span class="approach__ring"></span>
+      <!-- CrystalizedBall (React Bits, ported to vanilla WebGL2 — src/scripts/crystal.js), light theme in the accent red -->
+      <div class="approach__ball" data-crystal></div>
+      <!-- the compass' south point: a red badge with an arrow heading on down the page -->
+      <span class="approach__badge"><svg class="approach__down" viewBox="0 0 16 22" aria-hidden="true"><path d="M8 2v17M2.5 13.5 8 19l5.5-5.5" /></svg></span>
+    </div>
+    <p class="approach__line approach__line--l t-h5 m-h6">{approach.linesLeft}</p>
+    <p class="approach__line approach__line--r t-h5 m-h6">{approach.linesRight}</p>
+  </div>
+
+  <div class="approach__titles">
+    <h2 id="approach-title" class="approach__title t-lrg m-h1">{approach.title}</h2>
+  </div>
+
+  <div class="wall" string="progress" string-id="wall">
+    <div class="wall__lines" aria-hidden="true">{[1, 2, 3, 4, 5, 6].map((i) => <span style={`--i:${i}`}></span>)}</div>
+    <div class="wall__stage" aria-hidden="true">
+      <div class="wall__sticky">
+        <canvas class="wall__canvas" data-toolkit-canvas></canvas>
+        <span class="t-mm wall__cap">{approach.side}</span>
+      </div>
+    </div>
+    <div class="wall__grid">
+      {groups.map((g, gi) => (
+        <div class={`wall__col wall__col--${gi + 1}`}>
+          <h3 class="t-mm wall__label rise" string>({gi + 1})<br />{g.title}</h3>
+          <ul>
+            {g.tools.map((t) => (
+              <li class="wall__card rise" string style={`--brand:#${t.hex}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d={t.path} /></svg>
+                <span class="t-mm">{t.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .approach { position: relative; padding-top: calc(var(--vh) * 10); }
+  .approach__intro { row-gap: 2rem; }
+  .approach__kicker { --left: 4; --width: 6; }
+  .approach__kicker span { color: var(--c-soft); }
+  .approach__emblem { --left: 4; --width: 6; position: relative; height: 15rem; display: grid; place-items: center; }
+  .approach__ring { position: absolute; width: 13rem; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--c-line); }
+  /* the ball renders at size × box (0.55 × 20rem ≈ 11rem, just inside the 13rem ring); the larger box
+     leaves room for its glow, haze and sparks */
+  .approach__ball { position: absolute; left: 50%; top: 50%; width: 20rem; aspect-ratio: 1; translate: -50% -50%; pointer-events: none; z-index: 0; }
+  .approach__badge, .approach__n, .approach__lbl { z-index: 1; }
+  .approach__badge { position: absolute; bottom: -1.2rem; width: 2.6rem; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: var(--c-accent); color: var(--c-white); font-size: var(--p); font-weight: 600; }
+  .approach__n { position: absolute; top: 0; color: var(--c-grey); }
+  /* E / W sit just outside the 13rem ring, level with its centre (N is above it) */
+  .approach__cp { position: absolute; top: 50%; translate: 0 -50%; color: var(--c-grey); }
+  .approach__cp--e { left: calc(50% + 6.5rem + .7rem); }
+  .approach__cp--w { right: calc(50% + 6.5rem + .7rem); }
+  /* heading arrow under the badge: points on down the page */
+  .approach__down { width: .8rem; height: 1.1rem; overflow: visible;
+    fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: apDown 2.2s var(--e-smooth) infinite; }
+  @keyframes apDown { 50% { translate: 0 .14rem; } }
+  @media (prefers-reduced-motion: reduce) { .approach__down { animation: none; } }
+  .approach__lbl { position: absolute; top: 34%; color: var(--c-grey); }
+  .approach__lbl--r { right: 0; } .approach__lbl--l { left: 0; text-align: right; }
+  .approach__line { grid-row: 3; padding-bottom: .6rem; border-bottom: 1px solid var(--c-line); margin-top: 1.6rem; }
+  .approach__line--l { --left: 0; --width: 7; }
+  .approach__line--r { --left: 7; --width: 7; text-align: right; }
+
+  .approach__titles { position: relative; display: grid; place-items: center; margin-top: 2rem; padding-bottom: 3rem; }
+  .approach__titles > * { grid-area: 1 / 1; white-space: nowrap; }
+  .approach__title { translate: 0 22%; }
+
+  /* logo wall: 7 equal columns, logos in 1·2 and 6·7, the MacBook spins in 3–5 */
+  .wall { --wcols: 7; --offset: 5.4rem; position: relative; padding-top: 4rem; padding-bottom: 6rem; }
+  .wall__lines { position: absolute; inset: 0 var(--margin); pointer-events: none; }
+  .wall__lines span {
+    --draw: clamp(0, var(--progress, 0) * 3.2 - var(--i) * .07, 1);
+    position: absolute; top: 0; bottom: 0; width: 1px; background: var(--c-line);
+    left: calc(var(--i) * 100% / var(--wcols));
+    transform-origin: 50% 0; scale: 1 var(--draw);
+  }
+  .wall__stage { position: absolute; inset: 0; pointer-events: none; }
+  .wall__sticky { position: sticky; top: 0; height: calc(var(--vh) * 100); display: grid; place-items: center; }
+  .wall__canvas { width: calc((100vw - 2 * var(--margin)) * 3 / 7); height: calc(var(--vh) * 72); opacity: 0; transition: opacity 1.2s var(--e-cubic); }
+  .wall__canvas.-loaded { opacity: 1; }
+  .wall__cap { position: absolute; bottom: 2.4rem; left: 50%; translate: -50% 0; color: var(--c-grey); white-space: nowrap; }
+  .wall__grid { position: relative; display: grid; grid-template-columns: repeat(var(--wcols), minmax(0, 1fr)); padding-inline: var(--margin); }
+  .wall__col--1 { grid-column: 1; } .wall__col--2 { grid-column: 2; } .wall__col--3 { grid-column: 6; } .wall__col--4 { grid-column: 7; }
+  .wall__col--2, .wall__col--3 { padding-top: var(--offset); }
+  .wall__col ul { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 2rem; }
+  .wall__label { padding: 0 1rem 1.6rem; color: var(--c-grey); text-align: center; }
+  .wall__card {
+    aspect-ratio: 3 / 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem;
+    margin-inline: .9rem; border-radius: .4rem; color: var(--c-ink);
+    transition: opacity .9s var(--e-cubic), translate .9s var(--e-cubic), background-color .4s var(--e-cubic);
+  }
+  .wall__card svg { width: auto; height: 2.4rem; fill: currentColor; transition: color .4s var(--e-cubic), scale .5s var(--e-bounce); }
+  .wall__card span { color: var(--c-grey); text-align: center; transition: color .4s var(--e-cubic); }
+  .wall__card:hover { background: color-mix(in srgb, var(--brand) 9%, transparent); }
+  .wall__card:hover svg { color: color-mix(in oklab, var(--brand), #000 12%); scale: 1.12; }
+  .wall__card:hover span { color: var(--c-ink); }
+  @media (max-width: 1023px) {
+    .approach__kicker { --left: 0; --width: 6; }
+    .approach__emblem { --left: 1; --width: 4; }
+    .approach__line--l { --left: 0; --width: 3; } .approach__line--r { --left: 3; --width: 3; }
+    .wall__canvas { width: calc((100vw - 2 * var(--margin)) * 3 / 7 + 4rem); }
+  }
+  @media (max-width: 767px) {
+    .wall { --wcols: 4; --offset: 3rem; padding-top: 0; }
+    .wall__lines span:nth-child(n + 4) { display: none; }
+    .wall__stage { position: relative; height: calc(var(--vh) * 62); }
+    .wall__sticky { position: absolute; inset: 0; height: auto; }
+    .wall__canvas { width: 100%; height: 100%; }
+    .wall__cap { bottom: .4rem; }
+    .wall__col--1, .wall__col--2, .wall__col--3, .wall__col--4 { grid-column: auto; }
+    .wall__col--3 { padding-top: 0; } .wall__col--4 { padding-top: var(--offset); }
+    .wall__label { padding: 0 .2rem 1rem; }
+    .wall__col ul { row-gap: 1rem; }
+    .wall__card { margin-inline: .2rem; aspect-ratio: 1; gap: .5rem; }
+    .wall__card svg { height: 1.8rem; }
+  }
+</style>
+
+<script>
+  import { onPage, sig } from "../scripts/life";
+  onPage(() => {
+    const el = document.querySelector<HTMLElement>("[data-crystal]");
+    if (!el) return;
+    let ball: { destroy(): void } | null = null;
+    // boot when the section is ~1 screen away; the ball itself pauses off-screen
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      import("../scripts/crystal.js").then(({ createCrystalBall }) => {
+        if (sig().aborted) return;
+        const small = innerWidth < 1024;
+        ball = createCrystalBall(el, {
+          preset: "plasma", theme: "light", color: "#b5302a", size: 0.55,
+          crackle: 0.85, fill: 0.5, interactive: true, hoverStrength: 0.7, strands: 6, flares: 0.65,
+          glow: 0.9, sparks: 0.6, particleCount: small ? 6000 : 15000, motion: "rise", particleShape: "square",
+          depth: 0.6, sway: 0.5, twinkle: 0.5, haze: 0.7, dustSpeed: 1, speed: 1, intro: true, paused: false,
+        });
+      });
+    }, { rootMargin: "100% 0px" });
+    io.observe(el);
+    return () => { io.disconnect(); ball?.destroy(); };
+  });
+</script>

@@ -1,0 +1,90 @@
+---
+/**
+ * Captures sheet: opens like the info sheet (page shrinks to a thumbnail, sheet animates in),
+ * with a scrollable masonry of photographs. Photos: `captures` in src/data/site.ts
+ * (currently the frames from the old Framer portfolio — swap freely).
+ */
+import { captures } from "../data/site";
+// balanced masonry: drop each photo into the currently shortest column (by aspect height)
+const stack = (n: number) => {
+  const cols = Array.from({ length: n }, () => ({ h: 0, items: [] as { ph: (typeof captures.photos)[number]; k: number }[] }));
+  captures.photos.forEach((ph, k) => { const c = cols.reduce((a, b) => (b.h < a.h ? b : a)); c.items.push({ ph, k }); c.h += ph.h / ph.w; });
+  return cols;
+};
+const layouts = [{ cls: "-d", cols: stack(4) }, { cls: "-m", cols: stack(2) }];
+---
+<div class="pop -gallery" data-pop="gallery" hidden role="dialog" aria-modal="true" aria-labelledby="gal-title">
+  <div class="pop__veil" data-pop-close-veil></div>
+  <div class="grid pop__w gal__w">
+    <h2 class="pop__logo t-h3" id="gal-title"><span>{captures.title}</span></h2>
+    <div class="pop__close">
+      <button type="button" data-pop-close data-cursor="cursor-modal"><span class="t-mm">Close</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <p class="gal__k t-mm">{captures.kicker} · {String(captures.photos.length).padStart(2, "0")} frames</p>
+    <div class="gal__scroll" data-gal-scroll>
+      {layouts.map((L) => (
+        <div class={`gal__grid ${L.cls}`} aria-hidden={L.cls === "-m" ? "true" : undefined}>
+          {L.cols.map((c) => (
+            <div class="gal__col">
+              {c.items.map(({ ph, k }) => (
+                <figure class="gal__f" style={`--k:${k}`}>
+                  <img src={ph.src} alt={L.cls === "-m" ? "" : ph.alt} width={ph.w} height={ph.h} loading="lazy" decoding="async" />
+                  <figcaption class="t-mm">{String(k + 1).padStart(2, "0")}</figcaption>
+                </figure>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .pop.-gallery .pop__logo { display: block; }
+  .pop.-gallery.-on .pop__veil { background: var(--c-ink); }
+  .gal__w { grid-template-rows: auto auto 1fr; }
+  .gal__k { --left: 2; --width: 6; grid-row: 2; align-self: start; margin-top: .8rem; color: var(--c-grey); text-transform: uppercase; transition: opacity .9s var(--e-cubic) .3s, translate .9s var(--e-cubic) .3s; }
+  .gal__scroll {
+    --left: 1; --width: 12; grid-row: 3; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    margin: 1.4rem 0 0; padding-bottom: 3rem; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 2.4rem, #000 calc(100% - 4rem), transparent);
+    mask-image: linear-gradient(180deg, transparent 0, #000 2.4rem, #000 calc(100% - 4rem), transparent);
+  }
+  .gal__scroll::-webkit-scrollbar { display: none; }
+  .gal__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; padding-top: 2.4rem; align-items: start; }
+  .gal__grid.-m { display: none; }
+  .gal__col { display: flex; flex-direction: column; gap: .7rem; }
+  .gal__f { position: relative; margin: 0; border-radius: .9rem; overflow: hidden; background: rgba(var(--c-white-rgb), .04);
+    transition: opacity .8s var(--e-cubic), translate 1s var(--e-cubic), scale 1s var(--e-cubic); transition-delay: calc(.35s + var(--k) * .045s); }
+  .gal__f img { display: block; width: 100%; height: auto; transition: scale 1.2s var(--e-cubic), filter .6s; filter: saturate(.9); }
+  .gal__f:hover img { scale: 1.05; filter: saturate(1.05); }
+  .gal__f figcaption { position: absolute; left: .7rem; bottom: .6rem; color: rgba(var(--c-white-rgb), .85); mix-blend-mode: difference; opacity: 0; transition: opacity .4s; }
+  .gal__f:hover figcaption { opacity: 1; }
+  /* enter / leave, in step with the sheet */
+  .pop.-gallery.-enter .gal__f { opacity: 0; translate: 0 3rem; scale: .96; }
+  .pop.-gallery.-leave .gal__f { opacity: 0; translate: 0 2rem; transition-duration: .5s; transition-delay: calc(var(--k) * .015s); }
+  .pop.-gallery.-enter .gal__k, .pop.-gallery.-leave .gal__k { opacity: 0; translate: 0 var(--h6); }
+  @media (max-width: 1023px) {
+    .gal__k { --left: 0; --width: 6; }
+    .gal__scroll { --left: 0; --width: 6; }
+    .gal__grid.-d { display: none; }
+    .gal__grid.-m { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
+    .gal__col { gap: .5rem; }
+    .pop.-gallery .pop__logo { --left: 0; --width: 3; }
+  }
+  /* behind the gallery the page thumbnail dims further, so the photos read cleanly */
+  html.-pop-gallery .shell { opacity: .12; transition: scale .9s var(--e-cubic-in), translate .9s var(--e-cubic-in), clip-path .9s var(--e-cubic-in), opacity .9s var(--e-cubic) .3s; }
+</style>
+
+<script>
+  import { onPage } from "../scripts/life";
+  onPage(() => {
+    // the page's smooth scroller listens for the wheel globally: scroll the gallery ourselves
+    const sc = document.querySelector<HTMLElement>("[data-gal-scroll]");
+    if (sc) {
+      sc.addEventListener("wheel", (e) => { e.preventDefault(); e.stopPropagation(); sc.scrollTop += e.deltaY; }, { passive: false });
+      sc.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
+    }
+  });
+</script>

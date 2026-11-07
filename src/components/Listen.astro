@@ -1,0 +1,78 @@
+---
+import { listenWords, quote } from "../data/site";
+import Signature from "./Signature.astro";
+// photos from the captures gallery: landscapes, or Aryan alone / with one other person
+const shots = [
+  { src: "/media/gallery/dome-at-sunset.webp", w: 1400, h: 788, alt: "Dome silhouetted against a sunset", cls: "c1", f: "0.25" },
+  { src: "/media/gallery/corridor-silhouette.webp", w: 1050, h: 1400, alt: "Silhouette at the end of a corridor", cls: "c2", f: "-0.15" },
+  { src: "/media/gallery/mirror-selfie-blazer.webp", w: 788, h: 1400, alt: "Aryan's mirror selfie in a black blazer", cls: "c3", f: "0.4" },
+  { src: "/media/gallery/desk-with-a-view.webp", w: 1400, h: 788, alt: "Laptop on a desk by a high window", cls: "c4", f: "-0.3" },
+  { src: "/media/gallery/red-bull-f1-car.webp", w: 863, h: 575, alt: "Aryan with a Red Bull F1 show car", cls: "c5", f: "0.15" },
+  { src: "/media/gallery/ieee-cs-duo.webp", w: 1400, h: 933, alt: "Aryan with a friend from IEEE CS MUJ", cls: "c6", f: "-0.05" },
+];
+---
+<section class="listen on-light" id="listen" data-theme="light" string="progress" string-id="listen" string-enter-vp="top" string-exit-vp="bottom" aria-label="Approach">
+  <div class="listen__fx listen__fx--back" aria-hidden="true"><canvas data-fall="back"></canvas></div>
+  <div class="listen__words t-h2 m-h4 display">
+    <span class="wave" string="split|progress-part" string-split="word|char" string-part-of="listen[0.00-0.55]">{listenWords[0]}</span>
+    <span class="wave" string="split|progress-part" string-split="word|char" string-part-of="listen[0.28-0.83]">{listenWords[1]}</span>
+  </div>
+  <div class="listen__comp">
+    <span class="listen__glow" string="parallax" string-parallax="0.35" aria-hidden="true"></span>
+    {shots.map((s) => (
+      <figure class={`listen__shot ${s.cls}`} string="parallax" string-parallax={s.f}>
+        <img src={s.src} width={s.w} height={s.h} alt={s.alt} loading="lazy" decoding="async" />
+      </figure>
+    ))}
+    <div class="grid listen__quote">
+      <span class="t-mm listen__aside">{quote.aside}</span>
+      <blockquote class="t-h4 m-h5">
+        <p set:html={quote.text.replace(/(Then by all means follow that path\.)/, "<em>$1</em>")} />
+        <Signature class="listen__sig" />
+      </blockquote>
+    </div>
+  </div>
+  <div class="listen__fx listen__fx--front" aria-hidden="true"><canvas data-fall="front"></canvas></div>
+</section>
+
+<style is:global>
+  /* the light chapters slide in UNDER the story's last screen (the story is z 20 above): as the
+     story's paper fades out at its very end, the flowers + "find the pattern" are already there.
+     125vh = the story's last screen + its .975 → 1 fade (25vh), so paper is underneath before the
+     fade starts and the words begin animating as it does */
+  .light-wrap { background: var(--c-paper); position: relative; contain: paint; margin-top: calc(var(--vh) * -125); }
+  /* flow-root: stop .listen__words' 50vh top margin collapsing through the section, which made
+     its top (and so its scroll progress + the flowers layer) start 50vh late */
+  .listen { position: relative; display: flow-root; }
+  .listen__fx { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .listen__fx--front { z-index: 3; }
+  .listen__fx canvas { position: sticky; top: 0; width: 100%; height: calc(var(--vh) * 100); }
+  .listen__words { position: sticky; top: calc(var(--vh) * 45); height: calc(var(--vh) * 10); display: grid; place-items: center; margin: calc(var(--vh) * 50) 0 calc(var(--vh) * 200); z-index: 2; }
+  .listen__words > span { grid-area: 1 / 1; width: 100%; justify-content: center; }
+
+  /* the comp's last ~33vh are empty (the quote + signature end above it): pull the bloom chapter up
+     by about half of that so the tree follows the signature more closely */
+  .listen__comp { position: relative; height: calc(var(--vh) * 210); margin-bottom: calc(var(--vh) * -18); }
+  .listen__glow { position: absolute; left: 40%; top: 18%; width: 30vw; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c-accent-rgb), .55), rgba(var(--c-accent-rgb), 0)); filter: blur(10px); }
+  .listen__shot { position: absolute; margin: 0; overflow: hidden; border-radius: .6rem; box-shadow: 0 1.6rem 3rem rgba(var(--c-ink-rgb), .12); }
+  .listen__shot img { width: 100%; height: 100%; object-fit: cover; }
+  .listen__shot.c1 { left: 6%; top: 4%; width: 26vw; aspect-ratio: 16/9; }
+  .listen__shot.c2 { right: 8%; top: 0; width: 14vw; aspect-ratio: 9/16; }
+  .listen__shot.c3 { left: 38%; top: 30%; width: 13vw; aspect-ratio: 9/16; z-index: 2; }
+  .listen__shot.c4 { left: 2%; top: 46%; width: 22vw; aspect-ratio: 20/9; }
+  .listen__shot.c5 { right: 4%; top: 42%; width: 24vw; aspect-ratio: 16/9; }
+  .listen__shot.c6 { left: 58%; top: 8%; width: 16vw; aspect-ratio: 16/9; }
+  .listen__quote { position: absolute; left: 0; right: 0; top: 62%; z-index: 2; }
+  .listen__aside { --left: 0; --width: 3; align-self: end; color: var(--c-grey); }
+  .listen__quote blockquote { --left: 3; --width: 8; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2.6rem; }
+  .listen__quote blockquote p { font-family: var(--font-serif); font-size: var(--h3); line-height: 1.04; letter-spacing: -.01em; font-weight: 400; }
+  .listen__quote blockquote p em { font-style: italic; }
+  .listen__sig { width: 10rem; color: var(--c-ink); opacity: .9; }
+  @media (max-width: 1023px) {
+    .listen__shot.c1 { width: 56vw; } .listen__shot.c2 { width: 30vw; } .listen__shot.c3 { width: 28vw; left: 40%; }
+    .listen__shot.c4 { width: 52vw; top: 52%; } .listen__shot.c5 { width: 50vw; top: 40%; } .listen__shot.c6 { display: none; }
+    .listen__quote blockquote { --left: 0; --width: 6; }
+    .listen__aside { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .listen__words > span:not(:first-child) { display: none; } }
+</style>

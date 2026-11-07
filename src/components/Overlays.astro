@@ -1,0 +1,82 @@
+---
+import { guide } from "../data/site";
+interface Props { home?: boolean }
+const { home = true } = Astro.props;
+---
+<!-- custom cursor (fine pointers only) -->
+<div class="cursor t-mm" aria-hidden="true" data-cursor-el transition:persist="cursor">
+  <span class="cursor__dot"></span>
+  <span class="cursor__label" data-for="cursor-route">Go</span>
+  <span class="cursor__label" data-for="cursor-newtab">Open ↗</span>
+  <span class="cursor__label" data-for="cursor-modal">Info</span>
+  <span class="cursor__label" data-for="cursor-view">View</span>
+  <span class="cursor__label" data-for="cursor-pluck">Pluck</span>
+</div>
+
+<!-- pixel guide, bottom-right (hero + first stage) -->
+{home && <aside class="guide" data-guide aria-label="Guide">
+  <div class="guide__bubble" aria-live="polite">
+    <p class="guide__text t-m" data-guide-text>{guide.lines[0]}</p>
+    <button class="pill -dark guide__next" type="button" data-guide-next>Next</button>
+  </div>
+  <figure class="guide__char">
+    <canvas width="36" height="54" data-pixel-src="/media/aryan-toon.webp" data-pixel-cols="18" aria-hidden="true"></canvas>
+    <figcaption class="t-mm">{guide.name}</figcaption>
+  </figure>
+  <script type="application/json" data-guide-lines set:html={JSON.stringify(guide.lines)} />
+</aside>}
+
+
+<style is:global>
+  /* cursor */
+  .cursor { position: fixed; left: 0; top: 0; z-index: 900; /* above the preloader (500) and sheets */ pointer-events: none; translate: var(--cx, -100px) var(--cy, -100px); display: none; }
+  .has-cursor .cursor { display: block; }
+  .has-cursor, .has-cursor a, .has-cursor button { cursor: none; }
+  .cursor__dot {
+    position: absolute; width: .6rem; height: .6rem; left: -.3rem; top: -.3rem; border-radius: 50%;
+    background: var(--c-white); mix-blend-mode: difference;
+    transition: scale .45s var(--e-bounce), background-color .3s;
+  }
+  .cursor__label {
+    position: absolute; left: .9rem; top: .5rem; white-space: nowrap;
+    padding: .2rem .4rem; border-radius: .3rem;
+    background: var(--c-accent); color: var(--c-white);
+    opacity: 0; scale: .6; transform-origin: 0 0;
+    transition: opacity .25s, scale .35s var(--e-bounce);
+  }
+  .cursor[data-state] .cursor__dot { scale: 2.2; }
+  .cursor[data-state="cursor-route"] [data-for="cursor-route"],
+  .cursor[data-state="cursor-newtab"] [data-for="cursor-newtab"],
+  .cursor[data-state="cursor-modal"] [data-for="cursor-modal"],
+  .cursor[data-state="cursor-view"] [data-for="cursor-view"],
+  .cursor[data-state="cursor-pluck"] [data-for="cursor-pluck"] { opacity: 1; scale: 1; }
+  .cursor.-down .cursor__dot { scale: .7; }
+
+  /* guide */
+  .guide {
+    position: fixed; right: var(--margin); bottom: var(--margin); z-index: 90;
+    display: flex; align-items: flex-end; gap: .8rem;
+    transition: opacity .6s var(--e-cubic), translate .6s var(--e-cubic);
+  }
+  .guide.-hidden { opacity: 0; translate: 0 2rem; pointer-events: none; }
+  .guide__bubble {
+    width: 16rem; min-height: 5.6rem; padding: .7rem .8rem .6rem; border-radius: 1rem;
+    background: rgba(var(--c-white-rgb), .06);
+    backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: inset 1px 0 0 rgba(var(--c-white-rgb), .14), inset -1px 0 0 rgba(var(--c-white-rgb), .14), inset 0 1px 0 rgba(var(--c-white-rgb), .25);
+    display: flex; flex-direction: column; justify-content: space-between; gap: .6rem;
+    transform-origin: 100% 100%;
+    animation: guide-pop .7s var(--e-bounce) both 1.2s;
+  }
+  .guide__text { color: var(--c-white); min-height: 2.4em; }
+  .guide__text .caret { display: inline-block; width: .5em; height: 1em; vertical-align: -.1em; background: currentColor; animation: blink 1s steps(1) infinite; margin-left: .1em; }
+  .guide__next { align-self: flex-end; height: 1.2rem; font-size: var(--m); padding: 0 .6rem; }
+  .guide__char { display: flex; flex-direction: column; align-items: center; gap: .3rem; color: var(--c-grey); }
+  .guide__char canvas { width: 2.4rem; height: 3.6rem; image-rendering: pixelated; animation: bob 2.4s var(--e-smooth) infinite; }
+  @keyframes guide-pop { from { opacity: 0; scale: .7; } }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes bob { 50% { translate: 0 -3px; } }
+  @media (max-width: 1023px) { .guide__bubble { width: 12rem; } }
+  @media (max-width: 640px) { .guide { display: none; } }
+
+</style>

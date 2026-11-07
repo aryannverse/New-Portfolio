@@ -1,0 +1,23 @@
+---
+import { transitionWords } from "../data/site";
+const ranges = ["0.05-0.65", "0.35-0.95", "0.65-1.15"];
+---
+<section class="stage" data-verse="stage" string="progress" string-id="stage" string-enter-vp="top" string-exit-vp="bottom" aria-label="Collect, learn, design">
+  <span class="stage__bar" string="progress-part" string-part-of="stage[0.15-0.95]" aria-hidden="true"></span>
+  <div class="stage__w t-h0 m-h3 display">
+    {transitionWords.map((w, i) => (
+      <span class="wave" string="split|progress-part" string-split="word|char" string-part-of={`stage[${ranges[i] ?? "0.65-1.15"}]`}>{w}</span>
+    ))}
+  </div>
+</section>
+
+<style is:global>
+  .stage { position: relative; z-index: 30; height: calc(var(--vh) * 800); pointer-events: none; }
+  .stage__bar { position: sticky; top: 0; display: block; height: 0; z-index: 101; }
+  .stage__bar::before { content: ""; display: block; height: 3px; width: 100%; background: var(--c-accent); scale: var(--progress-slice, 0) 1; transform-origin: 0 50%; }
+  .stage__w { position: sticky; top: calc(var(--vh) * 45); height: calc(var(--vh) * 10); display: grid; place-items: center; color: var(--c-mute); }
+  .stage__w > span { grid-area: 1 / 1; width: 100%; justify-content: center; }
+  @media (prefers-reduced-motion: reduce) {
+    .stage__w > span:not(:first-child) { display: none; }
+  }
+</style>

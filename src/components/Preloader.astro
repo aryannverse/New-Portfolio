@@ -1,0 +1,136 @@
+---
+/**
+ * First-launch preloader (shown only on a fresh entry / reload of the home page, or the very
+ * first visit anywhere — decided by the inline gate in Base.astro, which sets html.-preload).
+ * Black screen + the bloom chapter's falling pixel flowers (far / mid / near depth), a 0→100
+ * counter bottom-left, then the sound prompt; exits with a pixel dissolve into the page.
+ * Logic: src/scripts/preloader.ts
+ */
+import Logo from "./Logo.astro";
+---
+<div class="pre" data-pre aria-live="polite">
+  <span class="pre__crown" data-pre-crown aria-hidden="true"></span>
+  <div class="pre__flowers" aria-hidden="true">
+    <canvas class="pre__fall -far" data-flowers="far"></canvas>
+    <canvas class="pre__fall -mid" data-flowers="mid"></canvas>
+    <canvas class="pre__fall -near" data-flowers="near"></canvas>
+  </div>
+  <div class="pre__focus" aria-hidden="true"></div>
+  <canvas class="pre__px" data-pre-px aria-hidden="true"></canvas>
+
+  <div class="pre__mark" aria-hidden="true"><Logo /></div>
+  <div class="pre__count">
+    <span class="t-mm pre__lbl">Loading the Aryanverse</span>
+    <span class="pre__num display"><b data-pre-count>0</b><i>%</i></span>
+  </div>
+
+  <div class="pre__ask" data-pre-ask role="dialog" aria-modal="true" aria-labelledby="pre-ask-t" hidden>
+    <div class="pre__eq" data-pre-eq aria-hidden="true">{Array.from({ length: 14 }, (_, k) => <i style={`--k:${k}`}></i>)}</div>
+    <div class="pre__ask-h">
+      <span class="t-mm pre__ask-k">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4.5" height="6.5" rx="1.6" /><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6" /></svg>
+        Best with headphones
+      </span>
+      <h2 class="pre__ask-t display" id="pre-ask-t">Sound on?</h2>
+      <p class="t-m pre__ask-p">A calm ambient score and soft interface sounds, all the way through. Switch it anytime from the nav.</p>
+    </div>
+    <div class="pre__opts">
+      <button class="pre__opt -on" type="button" data-pre-choice="on" data-cursor="cursor-route">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="f" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" /></svg>
+        <b>With sound</b><span class="t-mm">Ambient + UI sounds</span><kbd class="t-mm">↵</kbd>
+      </button>
+      <button class="pre__opt" type="button" data-pre-choice="off" data-cursor="cursor-route">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="f" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M16 9.5l5 5M21 9.5l-5 5" /></svg>
+        <b>Silent</b><span class="t-mm">Turn it on later</span><kbd class="t-mm">esc</kbd>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .pre { display: none; }
+  html.-preload { overflow: hidden; }
+  html.-preload .pre { display: block; }
+  .pre { position: fixed; inset: 0; z-index: 500; background: #050505; color: var(--c-paper); overflow: hidden; }
+  /* the black stays until the dissolve canvas has drawn its first frame (no flash of the page) */
+  .pre.-px { background: transparent; pointer-events: none; }
+  .pre__crown { position: absolute; left: 0; right: 0; top: -25vh; height: 40vh; }
+  .pre__flowers { position: absolute; inset: 0; transition: opacity 1.2s var(--e-cubic), filter 1.2s var(--e-cubic), scale 1.4s var(--e-cubic); }
+  .pre.-leaving .pre__flowers { opacity: 0; filter: blur(14px); scale: 1.12; }
+  .pre__fall { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .pre__fall.-far { filter: blur(1.4px); opacity: .7; }
+  .pre__fall.-near { filter: blur(2.6rem); opacity: .9; }
+  .pre__px { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  .pre.-leaving .pre__px { display: block; }
+
+  .pre__mark { position: absolute; left: 50%; top: 50%; translate: -50% -50%; color: var(--c-accent); transition: opacity .6s, scale .8s var(--e-cubic), filter .8s; }
+  .pre__mark .logo { width: clamp(4.5rem, 8vw, 7rem); height: auto; display: block; animation: prePulse 2.4s var(--e-smooth) infinite; }
+  @keyframes prePulse { 50% { opacity: .55; } }
+  .pre__count { position: absolute; left: var(--margin); bottom: calc(var(--margin) + .4rem); display: flex; flex-direction: column; gap: .3rem; transition: opacity .6s var(--e-cubic), translate .8s var(--e-cubic), filter .8s; }
+  .pre__lbl { color: var(--c-mute); text-transform: uppercase; }
+  .pre__num { font-size: clamp(4rem, 14vw, 13rem); line-height: .8; letter-spacing: -.05em; display: flex; align-items: flex-start; }
+  .pre__num b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pre__num i { font-style: normal; font-size: .28em; color: var(--c-accent); margin: .12em 0 0 .1em; }
+  .pre.-done .pre__count { opacity: 0; translate: 0 1.5rem; filter: blur(8px); }
+  .pre.-done .pre__mark { opacity: 0; scale: .85; filter: blur(8px); }
+
+  /* ---- sound prompt ---- */
+  .pre__ask {
+    position: absolute; left: 50%; top: 50%; width: min(34rem, calc(100% - 2 * var(--margin))); translate: -50% -46%; scale: .96; opacity: 0; filter: blur(10px);
+    padding: 1.3rem; border-radius: 1.8rem; display: grid; gap: 1.1rem;
+    background: linear-gradient(160deg, rgba(var(--c-white-rgb), .09), rgba(var(--c-white-rgb), .03) 55%);
+    backdrop-filter: blur(26px) saturate(170%); -webkit-backdrop-filter: blur(26px) saturate(170%);
+    box-shadow: inset 1px 0 0 rgba(var(--c-white-rgb), .12), inset -1px 0 0 rgba(var(--c-white-rgb), .12), inset 0 1px 0 rgba(var(--c-white-rgb), .26), 0 2.4rem 5rem rgba(0, 0, 0, .55), 0 0 6rem rgba(var(--c-accent-rgb), .12);
+    transition: opacity .8s var(--e-cubic), translate 1s var(--e-cubic), scale 1s var(--e-cubic), filter .8s var(--e-cubic);
+  }
+  .pre__ask[hidden] { display: grid; visibility: hidden; }
+  .pre.-ask .pre__ask { opacity: 1; translate: -50% -50%; scale: 1; filter: blur(0); visibility: visible; }
+  .pre.-leaving .pre__ask { opacity: 0; scale: 1.04; filter: blur(14px); transition-duration: .6s; }
+
+  /* live equaliser: bars dance; hovering "Silent" flattens them, hovering "With sound" excites them */
+  .pre__eq { --amp: 1; --spd: 1.1s; height: 4.2rem; border-radius: 1.1rem; display: flex; align-items: center; justify-content: center; gap: .32rem;
+    background: radial-gradient(120% 140% at 50% 100%, rgba(var(--c-accent-rgb), .22), rgba(var(--c-accent-rgb), 0) 60%), rgba(0, 0, 0, .25);
+    box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .06); }
+  .pre__eq i { width: .28rem; height: 2.6rem; border-radius: 1rem; background: linear-gradient(180deg, #e2705f, var(--c-accent));
+    transform-origin: 50% 50%; animation: preEq var(--spd) var(--e-smooth) infinite alternate; animation-delay: calc(var(--k) * -.13s);
+    scale: 1 calc(.15 + var(--amp) * .2); transition: scale .5s var(--e-cubic); }
+  .pre__eq i:nth-child(3n) { animation-duration: calc(var(--spd) * 1.3); } .pre__eq i:nth-child(4n + 1) { animation-duration: calc(var(--spd) * .8); }
+  @keyframes preEq { to { scale: 1 calc(.2 + var(--amp) * .8); } }
+  .pre__ask:has(.-on:hover, .-on:focus-visible) .pre__eq { --amp: 1.15; --spd: .6s; }
+  .pre__ask:has(.pre__opt:not(.-on):hover, .pre__opt:not(.-on):focus-visible) .pre__eq { --amp: .05; --spd: 2.4s; }
+
+  .pre__ask-h { padding: 0 .3rem; display: grid; gap: .45rem; }
+  .pre__ask-k { display: inline-flex; align-items: center; gap: .4rem; color: var(--c-accent); text-transform: uppercase; }
+  .pre__ask-k svg { width: .95rem; height: .95rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+  .pre__ask-t { font-size: var(--h3); line-height: 1; letter-spacing: -.02em; }
+  .pre__ask-p { color: var(--c-grey); max-width: 30em; }
+  .pre__opts { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+  .pre__opt {
+    position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: .7rem; align-items: center; text-align: left;
+    padding: .85rem .9rem; border-radius: 1.1rem; color: var(--c-paper); font: inherit; cursor: pointer;
+    background: rgba(var(--c-white-rgb), .05); box-shadow: inset 0 0 0 1px rgba(var(--c-white-rgb), .1);
+    transition: background-color .35s var(--e-cubic), box-shadow .35s var(--e-cubic), translate .5s var(--e-bounce);
+  }
+  .pre__opt svg { grid-row: 1 / span 2; width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .pre__opt svg .f { fill: currentColor; stroke: none; }
+  .pre__opt b { font-weight: 500; font-size: var(--p); }
+  .pre__opt span { color: var(--c-grey); }
+  .pre__opt kbd { position: absolute; right: .8rem; top: .7rem; color: var(--c-mute); font-family: var(--font-mono); }
+  .pre__opt:hover, .pre__opt:focus-visible { background: rgba(var(--c-white-rgb), .1); translate: 0 -2px; outline: none; }
+  .pre__opt.-on { background: linear-gradient(160deg, rgba(var(--c-accent-rgb), .9), rgba(var(--c-accent-rgb), .7)); box-shadow: inset 0 1px 0 rgba(var(--c-white-rgb), .25), 0 .8rem 2rem rgba(var(--c-accent-rgb), .3); }
+  .pre__opt.-on span, .pre__opt.-on kbd { color: rgba(var(--c-white-rgb), .75); }
+  .pre__opt.-on:hover, .pre__opt.-on:focus-visible { background: linear-gradient(160deg, var(--c-accent), rgba(var(--c-accent-rgb), .8)); }
+
+  /* the page comes into focus behind the dissolve. A backdrop-filter layer, NOT a filter/transform
+     on #main: those would make #main the containing block of the fixed MacBook canvas and push the
+     model off-screen until the animation ended. */
+  .pre__focus { position: absolute; inset: 0; display: none; pointer-events: none; }
+  .pre.-px .pre__focus { display: block; animation: preFocus 1.4s cubic-bezier(.2, .7, .1, 1) both; }
+  @keyframes preFocus {
+    from { backdrop-filter: blur(14px) brightness(.45); -webkit-backdrop-filter: blur(14px) brightness(.45); }
+    to { backdrop-filter: blur(0) brightness(1); -webkit-backdrop-filter: blur(0) brightness(1); }
+  }
+
+  @media (max-width: 640px) { .pre__opts { grid-template-columns: 1fr; } .pre__opt kbd { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .pre__mark .logo, .pre__eq i { animation: none; } .pre.-px .pre__focus { animation: none; display: none; } }
+</style>

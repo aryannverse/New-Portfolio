@@ -1,0 +1,144 @@
+---
+import { personalities, person } from "../data/site";
+---
+<section class="pers on-light" id="personalities" data-theme="light" aria-labelledby="pers-title">
+  <div class="grid pers__head">
+    <span class="t-mm pers__k">Modular by nature.<br />Curious by default.</span>
+    <h2 id="pers-title" class="t-lrg m-h1 pers__title">{personalities.title[0]} <span>{personalities.title[1]}</span></h2>
+    <span class="pers__rule" aria-hidden="true"></span>
+    <p class="t-h4 m-h5 t-center pers__lead rise" string>{personalities.lead}</p>
+    <span class="t-mm pers__hint">Click on a card to rotate</span>
+  </div>
+
+  <!-- the wheel (after "Who It's For" on string-tune.fiddle.digital): click a card to rotate it to the top -->
+  <div class="pers__stage" data-wheel style="--a:1">
+    <span class="t-mm pers__side pers__side--l">{personalities.left}</span>
+    <span class="t-mm pers__side pers__side--r">{personalities.right}</span>
+    <div class="pers__ripple" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <svg class="pers__rays" viewBox="0 0 280 280" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="140" y1="0" x2="140" y2="280" vector-effect="non-scaling-stroke" />
+      <line x1="239" y1="41" x2="41" y2="239" vector-effect="non-scaling-stroke" />
+      <line x1="280" y1="140" x2="0" y2="140" vector-effect="non-scaling-stroke" />
+      <line x1="239" y1="239" x2="41" y2="41" vector-effect="non-scaling-stroke" />
+    </svg>
+    <!-- Strands (React Bits, ported to vanilla WebGL2): a glass orb of light strands — reacts to hover, pulses on click -->
+    <div class="pers__orb" aria-hidden="true" data-strands></div>
+    <div class="pers__wheel" data-wheel-rot>
+      {personalities.cards.map((c, i) => (
+        <div class="pers__slide" style={`--n:${i}`}>
+          <button class={`pers__card ${i === 1 ? "-active" : ""}`} type="button" data-card={i} aria-pressed={i === 1 ? "true" : "false"}>
+            <h3 class="t-h6">{c.title}</h3>
+            <p class="t-m">{c.text}</p>
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="pers__end">
+    <p class="t-h6 t-center">Need all three on one team?<br />That's the whole point.</p>
+    <a class="pill -dark" href={`mailto:${person.email}`} data-cursor="cursor-newtab">Let’s collaborate ↗</a>
+  </div>
+</section>
+
+<style is:global>
+  .pers { position: relative; padding-top: 4rem; }
+  .pers__head { row-gap: 1.6rem; }
+  .pers__k { --left: 6; --width: 2; text-align: center; color: var(--c-grey); }
+  .pers__title { text-align: center; white-space: nowrap; font-size: min(var(--lrg), 9.8vw); }
+  .pers__title span { color: var(--c-soft); }
+  .pers__rule { --left: 6; --width: 2; justify-self: center; width: 1px; height: 6rem; background: var(--c-line); }
+  .pers__lead { --left: 4; --width: 6; }
+  .pers__hint { --left: 4; --width: 6; text-align: center; color: var(--c-grey); margin-top: -.6rem; }
+
+  /* --k scales the whole wheel uniformly (radius, cards, type, orb): 1.12 on laptop-height screens so
+     the full wheel still fits one screen, 1.2 on tall ones, 1 on small screens */
+  .pers__stage { --k: 1.12; --R: calc(19.5rem * var(--k)); --cw: calc(19rem * var(--k)); --ch: calc(12rem * var(--k)); position: relative; height: calc(var(--R) * 2 + 4rem); display: grid; place-items: center; margin-top: 2rem; }
+  .pers__stage > * { grid-area: 1 / 1; }
+  @media (min-width: 1024px) and (min-height: 1000px) { .pers__stage { --k: 1.2; } }
+  .pers__side { align-self: center; color: var(--c-grey); width: 9rem; z-index: 3; }
+  .pers__side--l { justify-self: start; margin-left: var(--margin); }
+  .pers__side--r { justify-self: end; margin-right: var(--margin); text-align: right; }
+  .pers__ripple { position: relative; width: calc(var(--R) * 2); aspect-ratio: 1; filter: blur(.6rem); }
+  .pers__ripple i { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c-white-rgb), 0) 70%, rgba(var(--c-white-rgb), .95) 92%, rgba(var(--c-white-rgb), 0)); animation: ripple 6s linear infinite; animation-delay: calc(var(--k, 0) * -1.5s); opacity: 0; }
+  .pers__ripple i:nth-child(2) { --k: 1; } .pers__ripple i:nth-child(3) { --k: 2; } .pers__ripple i:nth-child(4) { --k: 3; }
+  @keyframes ripple { 0% { scale: .2; opacity: 0; } 20% { opacity: 1; } 100% { scale: 1.15; opacity: 0; } }
+  .pers__orb { position: relative; z-index: 1; width: calc(15rem * var(--k)); aspect-ratio: 1; }
+  .pers__orb canvas { display: block; width: 100%; height: 100%; }
+  .pers__rays { width: calc(var(--R) * 1.2); height: calc(var(--R) * 1.2); stroke: rgba(var(--c-accent-rgb), .45); stroke-width: 1; fill: none; pointer-events: none; }
+
+  /* emblem: three discs that re-arrange for each card */
+
+  /* the wheel: slides hang from the centre and the whole wheel turns */
+  .pers__wheel { position: relative; width: 0; height: 0; z-index: 2; rotate: calc(var(--rot, -120) * 1deg); transition: rotate 1.8s cubic-bezier(.65, 0, .25, 1); }
+  .pers__slide { position: absolute; left: calc(var(--cw) / -2); bottom: 0; width: var(--cw); height: var(--R); transform-origin: 50% 100%; rotate: calc(var(--n) * 120deg); perspective: calc(30rem * var(--k)); pointer-events: none; }
+  .pers__card {
+    --rx: 30deg;
+    position: absolute; left: 0; top: 0; width: 100%; height: var(--ch); pointer-events: auto; text-align: left; font: inherit; color: inherit;
+    display: flex; flex-direction: column; justify-content: space-between; padding: calc(.9rem * var(--k)) calc(1.1rem * var(--k)) calc(1.3rem * var(--k)); border-radius: calc(1rem * var(--k));
+    background: #dcdbe0; cursor: pointer;
+    transform: rotateX(var(--rx)); transform-origin: 50% 100%;
+    box-shadow: 0 1.4rem 2.6rem rgba(var(--c-ink-rgb), .07), inset 0 0 0 1px rgba(var(--c-white-rgb), .6);
+    transition: background-color 1.5s var(--e-cubic), transform 1.5s var(--e-cubic), box-shadow 1.5s var(--e-cubic);
+  }
+  .pers__card > * { opacity: .6; transition: opacity .6s var(--e-cubic); }
+  .pers__card h3 { font-size: calc(var(--h6) * var(--k)); }
+  .pers__card p { color: var(--c-grey); font-size: calc(var(--mm) * var(--k)); line-height: 1.35; width: 78%; }
+  .pers__card:hover { background: var(--c-white); --rx: 20deg; transition: background-color .9s var(--e-cubic), transform .9s var(--e-cubic), box-shadow .9s var(--e-cubic); }
+  .pers__card.-active { background: var(--c-white); --rx: 0deg; cursor: default; box-shadow: 0 2rem 3.4rem rgba(var(--c-ink-rgb), .12), inset 0 0 0 1px rgba(var(--c-white-rgb), .9); transition-delay: .3s; }
+  .pers__card.-active > * { opacity: 1; }
+  .pers__card:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+  .pers__end { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 0 8rem; }
+  @media (max-width: 1023px) {
+    .pers__k { --left: 1; --width: 4; }
+    .pers__lead, .pers__hint { --left: 0; --width: 6; }
+    .pers__rule { --left: 2; }
+    .pers__stage { --k: 1; --R: 13.5rem; --cw: 12.5rem; --ch: 8.6rem; }
+    .pers__card { padding: .7rem .8rem .9rem; }
+    .pers__card p { width: 100%; }
+      .pers__side { display: none; }
+    .pers__orb { width: 9.5rem; }
+  }
+</style>
+
+<script>
+  import { onPage, sig } from "../scripts/life";
+  onPage(() => {
+    // click a card → the wheel turns the shortest way until that card is on top; the emblem re-forms
+    const stage = document.querySelector<HTMLElement>("[data-wheel]");
+    if (stage) {
+      const wheel = stage.querySelector<HTMLElement>("[data-wheel-rot]")!;
+      const orbEl = stage.querySelector<HTMLElement>("[data-strands]");
+      let orb: { pulse: () => void; destroy: () => void; props: Record<string, unknown> } | null = null;
+      const s0 = sig();
+      s0.addEventListener("abort", () => orb?.destroy(), { once: true }); // free the WebGL context when the page goes
+      // load the WebGL orb only when the section is near
+      if (orbEl) new IntersectionObserver(([e], o) => {
+        if (!e.isIntersecting) return; o.disconnect();
+        import("../scripts/strands.js").then(({ createStrands }) => {
+            if (s0.aborted) return;
+          orb = createStrands(orbEl, {
+            // brand reds/ambers for the warm strand, cool slate for the counter-strand; light mode for the paper background
+            colors: ["#b5302a", "#cf4a37", "#ee9a5c", "#ffe7d1", "#9fb6d8", "#4c5f88", "#1f2740"],
+            lightMode: true, glassSize: 1.05, energy: 0.6, intensity: 1.1, saturation: 1.05, maxDevicePixelRatio: 1.75,
+            speed: 1.6, amplitude: 1.45, // livelier than the defaults (1 / 1): faster flow, wider swing
+          }) ?? null;
+        });
+      }, { rootMargin: "60% 0px" }).observe(orbEl);
+      const cards = [...stage.querySelectorAll<HTMLButtonElement>("[data-card]")];
+      let active = 1, rot = -active * 120;
+      wheel.style.setProperty("--rot", String(rot));
+      const go = (i: number) => {
+        if (i === active) return;
+        let d = ((active - i) * 120) % 360;
+        if (d > 180) d -= 360; if (d < -180) d += 360;
+        rot += d; active = i;
+        wheel.style.setProperty("--rot", String(rot));
+        cards.forEach((c, k) => { c.classList.toggle("-active", k === i); c.setAttribute("aria-pressed", String(k === i)); });
+        // each personality gives the strands a nudge and a slightly different hue
+        if (orb) { orb.props.hueShift = [-0.02, 0, 0.03][i]; orb.pulse(); }
+      };
+      cards.forEach((c, i) => c.addEventListener("click", () => go(i)));
+    }
+  });
+</script>

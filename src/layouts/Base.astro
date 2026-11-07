@@ -1,0 +1,103 @@
+---
+import "../styles/base.css";
+import "../styles/transition.css";
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Overlays from "../components/Overlays.astro";
+import InfoPage from "../components/InfoPage.astro";
+import GalleryPage from "../components/GalleryPage.astro";
+import Preloader from "../components/Preloader.astro";
+import { meta, person } from "../data/site";
+interface Props { title?: string; description?: string; home?: boolean }
+const { title = meta.title, description = meta.description, home = true } = Astro.props;
+const site = Astro.site ?? new URL("https://aryannverse.vercel.app");
+const ld = {
+  "@context": "https://schema.org", "@type": "Person", name: person.name, jobTitle: person.role,
+  address: { "@type": "PostalAddress", addressLocality: "New Delhi", addressCountry: "IN" }, email: `mailto:${person.email}`,
+  sameAs: ["https://github.com/aryannverse", "https://www.linkedin.com/in/aryannnnverma/", "https://www.instagram.com/aryannverse/"],
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0a0a0a" />
+    <!-- AV mark. SVG for Chrome/Firefox; Safari ignores SVG favicons (it then invents a letter tile),
+         so PNG/ICO fallbacks + an apple-touch-icon carry the same logo there. ?v busts old cached icons. -->
+    <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png?v=3" type="image/png" sizes="32x32" />
+    <link rel="alternate icon" href="/favicon.ico?v=3" sizes="16x16 32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
+    <link rel="mask-icon" href="/favicon.svg?v=3" color="#b5302a" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, site)} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={new URL("/og.jpg", site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" href="/fonts/ClashDisplay-500.woff2" as="font" type="font/woff2" crossorigin />
+    {home && <>
+      <!-- the hero MacBook: start downloading at once so it is ready behind the preloader -->
+      <link rel="preload" href="/models/macbook.glb" as="fetch" crossorigin />
+      <link rel="preload" href="/media/screen-ferrari.webp" as="image" crossorigin />
+    </>}
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+    <!-- preloader gate: only a fresh entry or reload of the home page (or a first-ever visit) gets the preloader -->
+    <script is:inline>
+      (function () {
+        if (window.__avGate) return; window.__avGate = 1; // once per session (the router keeps the document)
+        var html = document.documentElement;
+        try {
+          var nav = performance.getEntriesByType("navigation")[0], t = nav ? nav.type : "navigate";
+          var ref = document.referrer, ext = true;
+          try { ext = !ref || new URL(ref).origin !== location.origin; } catch (_) {}
+          var home = location.pathname === "/", chosen = localStorage.getItem("av-sound");
+          if (t !== "back_forward" && ((home && (t === "reload" || ext)) || (!chosen && ext))) {
+            html.classList.add("-preload");
+            // a preloaded visit always starts at the hero: no browser scroll restore, no #section jump
+            if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+            if (location.hash) history.replaceState(history.state, "", location.pathname + location.search);
+          }
+          if (chosen === "on") html.classList.add("-sound-on");
+        } catch (_) {}
+      })();
+    </script>
+    <script is:inline>if ("startViewTransition" in document) document.documentElement.classList.add("-vt");</script>
+    <!-- same-document navigation: the page persists, so the music keeps playing between pages -->
+    <ClientRouter fallback="none" />
+  </head>
+  <body>
+    <a class="skip sr-only" href="#main">Skip to content</a>
+    <Header home={home} />
+    <div class="shell" data-shell>
+      <main id="main">
+        <slot />
+      </main>
+    </div>
+    <InfoPage />
+    <Preloader />
+    <GalleryPage />
+    <Overlays home={home} />
+    <div class="pt-curtain" aria-hidden="true"><span class="t-mm" data-pt-label></span></div>
+    <script>
+      import { bootString } from "../scripts/string";
+      import { initCursor, initPageUI } from "../scripts/ui";
+      import { initInfo } from "../scripts/info";
+      import { initTransitions } from "../scripts/transition";
+      import { initAudio, reflectSound } from "../scripts/audio";
+      import { initPreloader } from "../scripts/preloader";
+      import { onPage } from "../scripts/life";
+      // once per session
+      bootString(); initCursor(); initTransitions(); initAudio();
+      // every page (initial load + each router swap)
+      onPage(() => { initPageUI(); initInfo(); reflectSound(); initPreloader(); });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .skip:focus { position: fixed; z-index: 300; left: 1rem; top: 1rem; width: auto; height: auto; clip: auto; padding: .5rem 1rem; background: var(--c-white); color: var(--c-ink); border-radius: .5rem; }
+</style>
