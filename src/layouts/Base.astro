@@ -33,17 +33,22 @@ const ld = {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
     <link rel="mask-icon" href="/favicon.svg?v=3" color="#b5302a" />
     <link rel="canonical" href={new URL(Astro.url.pathname, site)} />
+    <meta property="og:site_name" content="Aryan Verma" />
+    <meta property="og:url" content={new URL(Astro.url.pathname, site)} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content={new URL("/og.jpg", site)} />
+    <meta property="og:image" content={new URL("/og.jpg?v=2", site)} />
+    <meta property="og:image:secure_url" content={new URL("/og.jpg?v=2", site)} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={title} />
+    <link rel="image_src" href={new URL("/og.jpg?v=2", site)} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL("/og.jpg", site)} />
+    <meta name="twitter:image" content={new URL("/og.jpg?v=2", site)} />
     <link rel="preload" href="/fonts/ClashDisplay-500.woff2" as="font" type="font/woff2" crossorigin />
     {home && <>
       <!-- the hero MacBook: start downloading at once so it is ready behind the preloader -->
