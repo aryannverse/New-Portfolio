@@ -127,23 +127,31 @@ const groups = approach.groups.map((g) => ({
   .wall__card:hover span { color: var(--c-ink); }
   @media (max-width: 1023px) {
     .approach__kicker { --left: 0; --width: 6; }
-    .approach__emblem { --left: 1; --width: 4; }
-    .approach__line--l { --left: 0; --width: 3; } .approach__line--r { --left: 3; --width: 3; }
+    .approach__emblem { --left: 0; --width: 6; height: 13rem; }
+    .approach__ring { width: 10.5rem; }
+    .approach__ball { width: 15rem; }
+    .approach__cp--e { left: calc(50% + 5.25rem + .3rem); }
+    .approach__cp--w { right: calc(50% + 5.25rem + .3rem); }
+    .approach__lbl { font-size: calc(var(--mm) * 0.85); line-height: 1.2; }
+    .approach__lbl--r { right: .4rem; } .approach__lbl--l { left: .4rem; }
+    .approach__line--l { --left: 0; --width: 3; font-size: clamp(0.95rem, 3.5vw, 1.2rem); }
+    .approach__line--r { --left: 3; --width: 3; font-size: clamp(0.95rem, 3.5vw, 1.2rem); }
     .wall__canvas { width: calc((100vw - 2 * var(--margin)) * 3 / 7 + 4rem); }
   }
   @media (max-width: 767px) {
-    .wall { --wcols: 4; --offset: 3rem; padding-top: 0; }
+    .wall { --wcols: 4; --offset: 2.2rem; padding-top: 0; }
     .wall__lines span:nth-child(n + 4) { display: none; }
     .wall__stage { position: relative; height: calc(var(--vh) * 62); }
     .wall__sticky { position: absolute; inset: 0; height: auto; }
     .wall__canvas { width: 100%; height: 100%; }
-    .wall__cap { bottom: .4rem; }
+    .wall__cap { bottom: .4rem; font-size: calc(var(--mm) * 0.9); }
     .wall__col--1, .wall__col--2, .wall__col--3, .wall__col--4 { grid-column: auto; }
     .wall__col--3 { padding-top: 0; } .wall__col--4 { padding-top: var(--offset); }
-    .wall__label { padding: 0 .2rem 1rem; }
-    .wall__col ul { row-gap: 1rem; }
-    .wall__card { margin-inline: .2rem; aspect-ratio: 1; gap: .5rem; }
-    .wall__card svg { height: 1.8rem; }
+    .wall__label { padding: 0 .1rem .8rem; font-size: clamp(0.58rem, 2.3vw, 0.72rem); line-height: 1.25; }
+    .wall__col ul { row-gap: .8rem; }
+    .wall__card { margin-inline: .15rem; aspect-ratio: 1; gap: .35rem; padding: .2rem; }
+    .wall__card svg { height: 1.5rem; max-width: 1.5rem; }
+    .wall__card span { font-size: clamp(0.52rem, 2vw, 0.68rem); line-height: 1.15; word-break: break-word; hyphens: auto; }
   }
 </style>
 

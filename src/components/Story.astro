@@ -52,9 +52,11 @@ const fmt = (s: string) => s.replace(/\*\*(.+?)\*\*/g, "<mark>$1</mark>");
   .story__wipe { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
   @media (max-width: 1023px) {
     .story { --bt: 16%; --bb: 34%; }
-    .story__dock { height: 34%; align-content: center; row-gap: .8rem; }
-    .story__who { --left: 0; --width: 1; justify-self: start; }
-    .story__talk { --left: 1; --width: 5; }
-    .story__skip { --left: 5; --width: 1; grid-row: 2; }
+    .story__dock { height: 34%; align-content: center; row-gap: .6rem; padding-bottom: max(.8rem, env(safe-area-inset-bottom, .8rem)); }
+    .story__who { --left: 0; --width: 1; justify-self: start; margin-right: .4rem; }
+    .story__who canvas { width: 2.8rem; height: 3.8rem; }
+    .story__talk { --left: 1; --width: 5; gap: .5rem; }
+    .story__line { min-height: 4.4em; font-size: clamp(0.95rem, 3.8vw, 1.12rem); line-height: 1.35; }
+    .story__skip { --left: 4; --width: 2; grid-row: 2; justify-self: end; height: 1.4rem; font-size: var(--mm); padding: 0 .8rem; }
   }
 </style>

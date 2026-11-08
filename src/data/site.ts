@@ -222,7 +222,7 @@ export const experience = {
       company: "Ninebar.ai",
       role: "AI Systems Engineering Intern",
       dates: "Aug 2026 — Present",
-      text: "Building AI systems at Ninebar.ai. Full write-up coming soon.", // TODO: description from Aryan
+      text: "Building AI systems at Ninebar.ai. Cannot reveal more though : )",
     },
     {
       word: "Ericsson",

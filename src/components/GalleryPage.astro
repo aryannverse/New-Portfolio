@@ -66,12 +66,46 @@ const layouts = [{ cls: "-d", cols: stack(4) }, { cls: "-m", cols: stack(2) }];
   .pop.-gallery.-leave .gal__f { opacity: 0; translate: 0 2rem; transition-duration: .5s; transition-delay: calc(var(--k) * .015s); }
   .pop.-gallery.-enter .gal__k, .pop.-gallery.-leave .gal__k { opacity: 0; translate: 0 var(--h6); }
   @media (max-width: 1023px) {
-    .gal__k { --left: 0; --width: 6; }
-    .gal__scroll { --left: 0; --width: 6; }
+    .pop.-gallery {
+      overflow: hidden;
+      height: 100%;
+      max-height: 100%;
+    }
+    .pop.-gallery .gal__w {
+      height: 100%;
+      max-height: 100%;
+      min-height: 0;
+      grid-template-rows: auto auto 1fr;
+      padding-top: calc(var(--h6) + 1.2rem);
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+      overflow: hidden;
+    }
+    .gal__k { --left: 0; --width: 6; margin-top: .4rem; }
+    .gal__scroll {
+      --left: 0; --width: 6;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      touch-action: pan-y;
+      pointer-events: auto;
+      margin-top: .8rem;
+      padding-bottom: 2.5rem;
+    }
     .gal__grid.-d { display: none; }
     .gal__grid.-m { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
     .gal__col { gap: .5rem; }
     .pop.-gallery .pop__logo { --left: 0; --width: 3; }
+    .gal__f {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .gal__f img {
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
   }
   /* behind the gallery the page thumbnail dims further, so the photos read cleanly */
   html.-pop-gallery .shell { opacity: .12; transition: scale .9s var(--e-cubic-in), translate .9s var(--e-cubic-in), clip-path .9s var(--e-cubic-in), opacity .9s var(--e-cubic) .3s; }
@@ -84,7 +118,6 @@ const layouts = [{ cls: "-d", cols: stack(4) }, { cls: "-m", cols: stack(2) }];
     const sc = document.querySelector<HTMLElement>("[data-gal-scroll]");
     if (sc) {
       sc.addEventListener("wheel", (e) => { e.preventDefault(); e.stopPropagation(); sc.scrollTop += e.deltaY; }, { passive: false });
-      sc.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
     }
   });
 </script>

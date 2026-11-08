@@ -52,7 +52,7 @@ export async function initLaptop(canvas: HTMLCanvasElement) {
   const el = (k: string) => document.querySelector<HTMLElement>(`[data-verse="${k}"]`);
   const hero = el("hero"), stage = el("stage"), story = el("story");
   const F: Record<string, K> = {
-    hero0: { x: small ? 0.45 : 1.5, y: small ? 1.5 : -0.42, s: small ? 0.55 : 1.45, rx: 0.55, ry: -0.75, rz: 0.32, lid: 1.15, a: 1 },
+    hero0: { x: small ? 0 : 1.5, y: small ? -0.58 : -0.42, s: small ? 0.64 : 1.45, rx: 0.55, ry: -0.75, rz: 0.32, lid: 1.15, a: 1 },
     hero1: { x: 0, y: 0.7, s: small ? 0.6 : 0.7, rx: 0.35, ry: -0.2, rz: 0.08, lid: 1.75, a: 1 },
     s1: { x: 0, y: 0.7, s: small ? 0.6 : 0.7, rx: 0.22, ry: 0.0, rz: 0, lid: 1.88, a: 1 },
     s2: { x: 0, y: 0.7, s: small ? 0.6 : 0.7, rx: 0.2, ry: 0.35, rz: -0.04, lid: 1.88, a: 1 },

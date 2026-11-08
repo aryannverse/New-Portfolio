@@ -69,9 +69,17 @@ const shots = [
   .listen__quote blockquote p em { font-style: italic; }
   .listen__sig { width: 10rem; color: var(--c-ink); opacity: .9; }
   @media (max-width: 1023px) {
-    .listen__shot.c1 { width: 56vw; } .listen__shot.c2 { width: 30vw; } .listen__shot.c3 { width: 28vw; left: 40%; }
-    .listen__shot.c4 { width: 52vw; top: 52%; } .listen__shot.c5 { width: 50vw; top: 40%; } .listen__shot.c6 { display: none; }
-    .listen__quote blockquote { --left: 0; --width: 6; }
+    .listen__comp { height: calc(36rem + 235vw); }
+    .listen__shot.c1 { width: 56vw; top: 2rem; left: 5%; }
+    .listen__shot.c2 { width: 38vw; top: calc(3.8rem + 31.5vw); right: 5%; left: auto; }
+    .listen__shot.c3 { width: 44vw; top: calc(5.6rem + 99.1vw); left: 8%; right: auto; }
+    .listen__shot.c4 { width: 58vw; top: calc(7.4rem + 177.3vw); right: 5%; left: auto; }
+    .listen__shot.c5 { width: 56vw; top: calc(9.2rem + 203.4vw); left: 5%; right: auto; }
+    .listen__shot.c6 { display: none; }
+    .listen__quote { top: calc(12.7rem + 234.9vw); }
+    .listen__quote blockquote { --left: 0; --width: 6; gap: 1.8rem; }
+    .listen__quote blockquote p { font-size: clamp(2.1rem, 8.8vw, 2.6rem); line-height: 1.12; letter-spacing: -0.02em; }
+    .listen__sig { width: 9.5rem; }
     .listen__aside { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .listen__words > span:not(:first-child) { display: none; } }

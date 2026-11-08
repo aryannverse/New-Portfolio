@@ -48,9 +48,11 @@ import { bloom } from "../data/site";
   @media (max-width: 1023px) {
     .bloom { height: calc(var(--vh) * 200); }
     .bloom__tree { width: 130vw; right: -45vw; height: calc(var(--vh) * 78); }
-    .bloom__words { left: var(--margin); top: calc(var(--vh) * 16); }
-    .bloom__cap { left: var(--margin); }
-    }
+    .bloom__words { left: var(--margin); right: var(--margin); top: calc(var(--vh) * 16); align-items: center; text-align: center; font-size: clamp(2rem, 7.5vw, 3rem); line-height: 1.05; }
+    .bloom__words > span { width: 100%; justify-content: center; }
+    .bloom__words > span:nth-child(2) { margin-left: 0; }
+    .bloom__cap { left: var(--margin); font-size: calc(var(--mm) * 0.95); line-height: 1.35; }
+  }
 </style>
 
 <script>

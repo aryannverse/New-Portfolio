@@ -90,14 +90,33 @@ import { personalities, person } from "../data/site";
   .pers__card:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
   .pers__end { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 0 8rem; }
   @media (max-width: 1023px) {
-    .pers__k { --left: 1; --width: 4; }
+    .pers { padding-top: 2.5rem; }
+    .pers__k { --left: 0; --width: 6; }
+    .pers__title { font-size: clamp(2rem, 8.5vw, 3.2rem); white-space: normal; line-height: 1.05; }
     .pers__lead, .pers__hint { --left: 0; --width: 6; }
-    .pers__rule { --left: 2; }
-    .pers__stage { --k: 1; --R: 13.5rem; --cw: 12.5rem; --ch: 8.6rem; }
-    .pers__card { padding: .7rem .8rem .9rem; }
-    .pers__card p { width: 100%; }
-      .pers__side { display: none; }
-    .pers__orb { width: 9.5rem; }
+    .pers__rule { --left: 2; height: 3rem; }
+    .pers__stage {
+      --k: 0.60;
+      --R: calc(19.5rem * var(--k));
+      --cw: calc(19rem * var(--k));
+      --ch: calc(12.5rem * var(--k));
+      height: calc(var(--R) * 2 + 3rem);
+      margin-top: 1rem;
+    }
+    .pers__side { display: none; }
+    .pers__orb { width: calc(15rem * var(--k)); }
+    .pers__card {
+      padding: calc(.75rem * var(--k)) calc(.9rem * var(--k)) calc(.9rem * var(--k));
+      border-radius: calc(1rem * var(--k));
+    }
+    .pers__card h3 { font-size: 0.88rem; line-height: 1.15; }
+    .pers__card p { font-size: 0.64rem; line-height: 1.25; width: 95%; }
+    .pers__end { padding: 1.5rem 0 4rem; }
+  }
+  @media (max-width: 360px) {
+    .pers__stage { --k: 0.52; }
+    .pers__card h3 { font-size: 0.82rem; }
+    .pers__card p { font-size: 0.6rem; }
   }
 </style>
 

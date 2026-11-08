@@ -45,6 +45,11 @@ function header() {
     // the closing ink cover of the experience chapter counts as dark
     const cover = $(".exp__cover"); if (cover && parseFloat(cover.style.getPropertyValue("--c") || "0") > 0.85) theme = "dark";
     h.classList.toggle("-on-light", theme === "light");
+    const metaTheme = $('meta[name="theme-color"]');
+    if (metaTheme) {
+      const color = theme === "light" ? "#e9e9e7" : "#0a0a0a";
+      if (metaTheme.getAttribute("content") !== color) metaTheme.setAttribute("content", color);
+    }
     const bloom = $("#bloom");
     if (bloom) { const r = bloom.getBoundingClientRect(); h.classList.toggle("-fade", r.top <= probe && r.bottom > probe); }
     if (foot) h.classList.toggle("-away", foot.getBoundingClientRect().top < innerHeight * 0.35);
@@ -104,10 +109,14 @@ function guide() {
 function menu() {
   const h = $("[data-header]"), btn = $("[data-menu-btn]");
   if (!h || !btn) return;
-  const set = (on: boolean) => { h.classList.toggle("-menu", on); btn.setAttribute("aria-expanded", String(on)); };
+  const set = (on: boolean) => {
+    h.classList.toggle("-menu", on);
+    document.documentElement.classList.toggle("-menu", on);
+    btn.setAttribute("aria-expanded", String(on));
+  };
   let y0 = scrollY;
   btn.addEventListener("click", (e) => { e.stopPropagation(); y0 = scrollY; set(!h.classList.contains("-menu")); });
-  $$("[data-menu-link]").forEach((a) => a.addEventListener("click", () => set(false)));
+  $$("[data-menu-link], [data-menu-backdrop]").forEach((a) => a.addEventListener("click", () => set(false)));
   document.addEventListener("click", (e) => { if (!h.contains(e.target as Node)) set(false); }, opt());
   addEventListener("keydown", (e) => { if (e.key === "Escape") set(false); }, opt());
   addEventListener("scroll", () => { if (Math.abs(scrollY - y0) > 80) { set(false); y0 = scrollY; } }, opt({ passive: true }));

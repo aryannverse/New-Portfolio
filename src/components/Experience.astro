@@ -15,7 +15,7 @@ import Logo from "./Logo.astro";
         {experience.roles.map((r, i) => (
           <li class="exp__step">
             <span class="t-mm exp__n">({i + 1})</span>
-            <h3 class="t-m exp__role"><b>{r.company}</b><br />{r.role} <span class="t-mm">{r.dates}</span></h3>
+            <h3 class="t-m exp__role"><b set:html={r.company.replace("MUJ", '<span class="exp__muj">MUJ</span>')} /><br />{r.role} <span class="t-mm">{r.dates}</span></h3>
             <p class="t-m exp__text" string="split" string-split="word">{r.text}</p>
           </li>
         ))}
@@ -55,6 +55,7 @@ import Logo from "./Logo.astro";
   .exp__glyph i { font-style: normal; font-family: var(--font); font-weight: 200; font-size: .9em; line-height: 1; translate: 0 -.04em; }
   .exp__glyph .exp__sig { height: .82em; width: auto; color: var(--c-ink); }
   .exp__text.-splitted { flex-wrap: wrap; }
+  .exp__muj { display: inline; }
   .exp__cover {
     --c: 0;
     position: absolute; inset: 0; background: var(--c-ink);
@@ -62,11 +63,36 @@ import Logo from "./Logo.astro";
     pointer-events: none;
   }
   @media (max-width: 1023px) {
-    .exp__t { --left: 0; --width: 6; }
+    .exp__w {
+      padding-top: calc(var(--h6) + 3.2rem);
+      padding-bottom: max(1.4rem, env(safe-area-inset-bottom, 1.2rem));
+    }
+    .exp__t {
+      --left: 0; --width: 6;
+      font-size: clamp(2.8rem, 10.5vw, 3.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+    }
     .exp__side { display: none; }
-    .exp__words { font-size: min(var(--h1), 17vw); }
-    .exp__steps { --left: 0; --width: 6; grid-template-columns: 1fr 1fr; row-gap: 1.2rem; }
-    .exp__text { font-size: var(--mm); }
+    .exp__words { font-size: clamp(2.2rem, 11vw, 3.8rem); }
+    .exp__steps {
+      --left: 0; --width: 6;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem 1.1rem;
+      padding-inline: calc(var(--margin) + 0.3rem);
+    }
+    .exp__n { margin-bottom: .2rem; font-size: .65rem; }
+    .exp__role { margin-bottom: .25rem; font-size: .72rem; line-height: 1.2; }
+    .exp__role b {
+      font-size: 0.92rem;
+      line-height: 1.15;
+      display: block;
+      margin-bottom: 0.15rem;
+      color: var(--c-ink);
+    }
+    .exp__role .t-mm { margin-top: .12rem; font-size: .58rem; }
+    .exp__text { font-size: .58rem; line-height: 1.32; }
+    .exp__muj { display: block; }
   }
   @media (prefers-reduced-motion: reduce) {
     .swap .-s-char { filter: none; scale: 1; }

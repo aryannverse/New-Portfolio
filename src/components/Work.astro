@@ -164,14 +164,21 @@ const now = experience.roles[0];
   .work__mail:hover { background: var(--c-ink); color: var(--c-white); }
 
   @media (max-width: 1023px) {
+    .work { padding: 2.5rem 0 4rem; }
     .work__k, .work__r { display: none; }
     .work__t { --left: 0; --width: 6; text-align: left; }
-    .work__grid { grid-auto-rows: 9rem; }
+    .work__grid { grid-auto-rows: 9.8rem; }
+    .work__item { border-radius: 1.4rem; padding: .85rem; }
     .w-miraki, .w-leuk, .w-genesis, .w-hs3, .w-bsm { --left: 0; --width: 6; grid-row: span 2; }
     .w-s1, .w-s2 { --width: 3; }
     .w-s1 { --left: 0; } .w-s2 { --left: 3; }
     .w-now, .w-award { --left: 0; --width: 6; }
-    .w-photo { --left: 0; --width: 3; } .w-mail { --left: 3; --width: 3; }
+    .w-photo { --left: 0; --width: 6; grid-row: span 2; }
+    .w-mail { --left: 0; --width: 6; grid-row: span 2; }
+    .work__dial { width: 3.5rem; height: 3.5rem; }
+    .work__gauge-row { gap: .5rem; }
+    .work__gauge-n b { font-size: 1.8rem; }
+    .work__gauge-f { font-size: calc(var(--mm) * 0.82); white-space: nowrap; }
     .work__sum { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .work__ticker ul { animation: none; } }

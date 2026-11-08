@@ -61,7 +61,9 @@ export function initInfo() {
         void shell.offsetWidth;
       }
       state = "opening";
-      StringTune.getInstance().lockPageScroll();
+      if (matchMedia("(min-width: 1024px)").matches) {
+        StringTune.getInstance().lockPageScroll();
+      }
       pop.hidden = false;
       pop.classList.remove("-leave");
       pop.classList.add("-enter");
@@ -110,6 +112,7 @@ export function initInfo() {
     const sel = key === "info" ? `[data-info-open], [data-pop-open="info"]` : `[data-pop-open="${key}"]`;
     document.querySelectorAll<HTMLElement>(sel).forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); open(b); }));
     pop.querySelectorAll<HTMLElement>("[data-pop-close], [data-pop-close-veil]").forEach((b) => b.addEventListener("click", close));
+    pop.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
     addEventListener("keydown", (e) => { if (e.key === "Escape") close(); }, g());
     sig().addEventListener("abort", () => { if (state !== "closed") { clearTimeout(timer); root.classList.remove("-pop", `-pop-${key}`); StringTune.getInstance().unlockPageScroll(); busy = null; } }, { once: true });
     // a link to the page we're on: close the sheet (the scroll itself is handled globally)
